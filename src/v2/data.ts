@@ -24,40 +24,45 @@ export const menuItems = [
 ];
 
 /* ---------------- Portfolio ----------------
-   TODO (Steff): para añadir un video real a una tarjeta, sube el .mp4 (vertical 9:16, ligero, sin audio pesado)
+   TODO (Steff): para añadir un video real a una tarjeta, sube el .mp4 (vertical 9:16, ligero)
    a `public/videos/` y un póster .jpg a `public/videos/posters/`, y rellena `src` y `poster` con
-   `${import.meta.env.BASE_URL}videos/nombre.mp4`. Sin `src` se muestra el placeholder elegante. */
-export type Tone = "sand" | "cream" | "ink" | "hero" | "soft" | "oxblood";
+   `${import.meta.env.BASE_URL}videos/nombre.mp4`. Sin `src` se muestra la composición con tu foto.
+   Las marcas, hooks y formatos de abajo son de EJEMPLO: sustitúyelos por los reales. */
+export type Tone = "cream" | "sand" | "blush" | "hero" | "rose" | "oxblood";
+/** framing of the portrait used as placeholder: face, waist-up or full figure */
+export type Crop = "face" | "torso" | "full";
 
 export type VideoItem = {
   brand: string; // TODO: sustituir por marcas reales
   format: string;
   duration: string;
+  hook: string; // texto de gancho que aparece sobre el video
   tone: Tone;
+  crop: Crop;
   src?: string;
   poster?: string;
 };
 
 export const portfolio: Record<(typeof services)[number]["id"], VideoItem[]> = {
   moda: [
-    { brand: "Maison Aurea", format: "Try-on", duration: "0:24", tone: "sand" },
-    { brand: "Atelier Nube", format: "Lookbook", duration: "0:18", tone: "oxblood" },
-    { brand: "Hilo & Lino", format: "Reseña", duration: "0:31", tone: "cream" },
+    { brand: "Maison Aurea", format: "Try-on", duration: "0:24", hook: "3 looks con un solo blazer", tone: "sand", crop: "torso" },
+    { brand: "Atelier Nube", format: "Lookbook", duration: "0:18", hook: "Lo que me pongo un lunes", tone: "oxblood", crop: "full" },
+    { brand: "Hilo & Lino", format: "Reseña", duration: "0:31", hook: "¿Vale la pena el lino?", tone: "cream", crop: "face" },
   ],
   belleza: [
-    { brand: "Lumé Skin", format: "Rutina", duration: "0:36", tone: "hero" },
-    { brand: "Casa Rosal", format: "Unboxing", duration: "0:22", tone: "oxblood" },
-    { brand: "Alba Beauty", format: "Tutorial", duration: "0:42", tone: "cream" },
+    { brand: "Lumé Skin", format: "Rutina", duration: "0:36", hook: "Mi piel en 5 minutos", tone: "blush", crop: "face" },
+    { brand: "Casa Rosal", format: "Unboxing", duration: "0:22", hook: "Abro esto contigo", tone: "rose", crop: "torso" },
+    { brand: "Alba Beauty", format: "Tutorial", duration: "0:42", hook: "El labial que no se mueve", tone: "hero", crop: "face" },
   ],
   lifestyle: [
-    { brand: "Cala Studio", format: "Un día conmigo", duration: "0:28", tone: "cream" },
-    { brand: "Tierra Viva", format: "Reseña", duration: "0:20", tone: "sand" },
-    { brand: "Mesa Norte", format: "Hooks", duration: "0:15", tone: "ink" },
+    { brand: "Cala Studio", format: "Un día conmigo", duration: "0:28", hook: "Un martes cualquiera", tone: "cream", crop: "full" },
+    { brand: "Tierra Viva", format: "Reseña", duration: "0:20", hook: "Probé esto 30 días", tone: "sand", crop: "torso" },
+    { brand: "Mesa Norte", format: "Hooks", duration: "0:15", hook: "No compres esto sin ver", tone: "oxblood", crop: "face" },
   ],
   momlife: [
-    { brand: "Pequeño Mundo", format: "Testimonial", duration: "0:33", tone: "hero" },
-    { brand: "Brote Kids", format: "Unboxing", duration: "0:26", tone: "oxblood" },
-    { brand: "Nido Baby", format: "Reseña", duration: "0:29", tone: "cream" },
+    { brand: "Pequeño Mundo", format: "Testimonial", duration: "0:33", hook: "Lo que nadie te cuenta", tone: "blush", crop: "torso" },
+    { brand: "Brote Kids", format: "Unboxing", duration: "0:26", hook: "Su primer día de cole", tone: "oxblood", crop: "full" },
+    { brand: "Nido Baby", format: "Reseña", duration: "0:29", hook: "Mamá real, opinión real", tone: "hero", crop: "face" },
   ],
 };
 
@@ -76,13 +81,21 @@ export const brands = [
 ];
 
 /* ---------------- Proceso ---------------- */
-export const formats = ["Unboxing", "Reseña", "Tutorial / rutina", "Try-on", "Testimonial", "Hooks alternativos", "Material en bruto"];
+export const formats = [
+  { name: "Unboxing", note: "La primera impresión, sin guion aparente" },
+  { name: "Reseña", note: "Opinión honesta, con pros y matices" },
+  { name: "Tutorial / rutina", note: "Paso a paso, fácil de copiar" },
+  { name: "Try-on", note: "Tallas, caídas y combinaciones" },
+  { name: "Testimonial", note: "Mi experiencia, contada a cámara" },
+  { name: "Hooks alternativos", note: "Varias aperturas para testear" },
+  { name: "Material en bruto", note: "Tomas extra para tu equipo" },
+];
 
 export const steps = [
-  { n: "01", title: "Brief", text: "Me cuentas el producto, tu audiencia y lo que quieres lograr. Si no tienes brief, lo armamos juntas." },
-  { n: "02", title: "Guion", text: "Te propongo ideas, ganchos y estructura. Aprobamos el enfoque antes de grabar." },
-  { n: "03", title: "Grabación", text: "Grabo en casa con luz natural y un tono cercano. Natural, sin parecer anuncio." },
-  { n: "04", title: "Entrega", text: "Recibes los videos editados, listos para publicar, en vertical 9:16 y con subtítulos." },
+  { n: "I", title: "Brief", text: "Me cuentas el producto, tu audiencia y lo que quieres lograr. Si no tienes brief, lo armamos juntas." },
+  { n: "II", title: "Guion", text: "Te propongo ideas, ganchos y estructura. Aprobamos el enfoque antes de grabar." },
+  { n: "III", title: "Grabación", text: "Grabo en casa con luz natural y un tono cercano. Natural, sin parecer anuncio." },
+  { n: "IV", title: "Entrega", text: "Recibes los videos editados, listos para publicar, en vertical 9:16 y con subtítulos." },
 ];
 
 // TODO (Steff): confirmar plazos y número de revisiones.

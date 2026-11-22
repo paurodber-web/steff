@@ -2,7 +2,71 @@ import { memo, useRef } from "react";
 import { EMAIL, socials } from "./data";
 import { CopyEmail } from "./CopyEmail";
 import { ArrowUpRight } from "./Icons";
-import { SplitTitle, useSectionAnim, gsap } from "./anim";
+import { useEffect } from "react";
+import { useSectionAnim, gsap } from "./anim";
+import { Magnetic } from "./Magnetic";
+
+/** HABLEMOS: letters swell towards the pointer (Bodoni Moda is variable, 400–700). */
+function Swell({ word }: { word: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || !window.matchMedia("(pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const letters = Array.from(root.querySelectorAll<HTMLElement>("[data-w]"));
+    const cur = letters.map(() => 500);
+    const target = letters.map(() => 500);
+    let raf = 0;
+    let running = false;
+    const loop = () => {
+      let moving = false;
+      letters.forEach((el, i) => {
+        cur[i] += (target[i] - cur[i]) * 0.12;
+        if (Math.abs(target[i] - cur[i]) > 0.5) moving = true;
+        el.style.fontWeight = String(Math.round(cur[i]));
+      });
+      if (moving) raf = requestAnimationFrame(loop);
+      else running = false;
+    };
+    const kick = () => {
+      if (!running) {
+        running = true;
+        raf = requestAnimationFrame(loop);
+      }
+    };
+    const section = root.closest("section")!;
+    const move = (e: PointerEvent) => {
+      letters.forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+        target[i] = 400 + 300 * Math.max(0, 1 - d / 420);
+      });
+      kick();
+    };
+    const leave = () => {
+      target.fill(500);
+      kick();
+    };
+    section.addEventListener("pointermove", move);
+    section.addEventListener("pointerleave", leave);
+    return () => {
+      cancelAnimationFrame(raf);
+      section.removeEventListener("pointermove", move);
+      section.removeEventListener("pointerleave", leave);
+    };
+  }, []);
+  return (
+    <>
+      <span className="sr-only">{word}</span>
+      <span ref={ref} aria-hidden data-title data-stagger="0.07" className="inline-flex whitespace-nowrap">
+        {word.split("").map((c, i) => (
+          <span key={i} data-w className="inline-block" style={{ fontWeight: 500 }}>
+            {c}
+          </span>
+        ))}
+      </span>
+    </>
+  );
+}
 
 const linkCls =
   "rounded-sm underline decoration-cream/30 underline-offset-4 transition-colors hover:decoration-cream active:decoration-cream focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cream";
@@ -32,21 +96,22 @@ export const Contact = memo(function Contact() {
   });
 
   return (
-    <section ref={ref} id="contacto" aria-labelledby="contacto-title" className="scroll-mt-0">
+    <section ref={ref} id="contacto" data-folio="Nº 07 — Contacto" aria-labelledby="contacto-title" className="scroll-mt-0">
       <div className="v2-frame">
         <div data-card className="v2-radius grain relative isolate overflow-hidden bg-ink text-cream">
           <div aria-hidden className="pointer-events-none absolute -bottom-[30%] left-1/2 h-[80%] w-[130%] -translate-x-1/2 rounded-full opacity-70" style={{ background: "radial-gradient(closest-side, #5c1a1f, rgba(92,26,31,0))" }} />
           <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[60%] w-[120%] -translate-x-1/2 rounded-full opacity-[0.12]" style={{ background: "radial-gradient(closest-side, #f4eee3, rgba(244,238,227,0))" }} />
           <div className="relative mx-auto flex w-full max-w-[1200px] flex-col px-5 pb-6 pt-[clamp(72px,10vw,140px)] sm:px-8 lg:px-12">
             <p data-rise className="text-center text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60 sm:tracking-[0.28em]">
-              ¿Trabajamos juntas?
+              Nº 07 — ¿Trabajamos juntas?
             </p>
             <h2
               id="contacto-title"
-              className="mt-8 select-none text-center font-display font-medium uppercase leading-[0.85] tracking-[-0.02em]"
-              style={{ fontSize: "min(15.2vw, 13.2rem)" }}
+              className="mt-8 select-none text-center font-display uppercase leading-[0.85] tracking-[-0.03em]"
+              style={{ fontSize: "min(14vw, 12.4rem)" }}
+              data-cursor="Hola"
             >
-              <SplitTitle letters parts={[{ t: "Hablemos" }]} />
+              <Swell word="Hablemos" />
             </h2>
 
             <div className="mx-auto mt-[clamp(40px,6vw,80px)] flex flex-col items-center text-center">
@@ -67,16 +132,19 @@ export const Contact = memo(function Contact() {
               <ul data-rise aria-label="Redes sociales" className="mt-8 flex flex-wrap justify-center gap-3 sm:mt-10">
                 {socials.map((s) => (
                   <li key={s.label}>
+                    <Magnetic strength={0.25}>
                     <a
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-cursor="Abrir"
                       className="group inline-flex h-12 items-center gap-3 rounded-full border border-cream/25 pl-6 pr-4 text-[12px] font-medium uppercase tracking-[0.2em] text-cream transition-colors duration-500 hover:bg-cream hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cream"
                     >
                       {s.label}
                       <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:rotate-45" />
                       <span className="sr-only">(se abre en una pestaña nueva)</span>
                     </a>
+                    </Magnetic>
                   </li>
                 ))}
               </ul>

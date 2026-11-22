@@ -2,12 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Hero, type HeroImage } from "./Hero";
 import { MenuOverlay } from "./MenuOverlay";
 import { ContactOverlay } from "./ContactOverlay";
-import { Portfolio } from "./Portfolio";
+import { Manifesto } from "./Manifesto";
+import { Feed } from "./Feed";
+import { Credits } from "./Credits";
+import { Grain, Folio, Cursor } from "./Chrome";
+import { useSmoothScroll, scrollToTarget } from "./smooth";
 import { Process } from "./Process";
 import { About } from "./About";
 import { Faq } from "./Faq";
 import { Contact } from "./Contact";
-import { Brands } from "./Brands";
 import { FloatingBar } from "./FloatingBar";
 import { useScenes } from "./anim";
 
@@ -36,6 +39,7 @@ export default function Page({ image, aboutImage }: { image: HeroImage; aboutIma
 
   // page background follows the section in view (cream → sand → cream → warm paper)
   useScenes();
+  useSmoothScroll();
 
   // Close the menu, then smooth-scroll to a section that exists at every breakpoint.
   const navigate = useCallback((id: string) => {
@@ -44,8 +48,7 @@ export default function Page({ image, aboutImage }: { image: HeroImage; aboutIma
     window.setTimeout(() => {
       const el = document.getElementById(id);
       if (!el) return;
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      scrollToTarget(el);
       history.replaceState(null, "", `#${id}`);
     }, 60);
   }, []);
@@ -68,13 +71,17 @@ export default function Page({ image, aboutImage }: { image: HeroImage; aboutIma
     <>
       <main data-v2-bg>
         <Hero image={image} onMenu={openMenu} onContact={openContact} />
-        <Portfolio />
-        <Brands onContact={openContact} />
+        <Manifesto portrait={aboutImage} />
+        <Feed portrait={aboutImage} />
+        <Credits onContact={openContact} />
         <Process />
         <About image={aboutImage} />
         <Faq onContact={openContact} />
         <Contact />
       </main>
+      <Grain />
+      <Folio />
+      <Cursor />
       <FloatingBar onMenu={openMenu} onContact={openContact} hidden={active !== null} />
       <MenuOverlay open={active === "menu"} onClose={close} onNavigate={navigate} onContact={() => openOverlay("contact")} />
       <ContactOverlay open={active === "contact"} onClose={close} />

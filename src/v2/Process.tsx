@@ -2,32 +2,33 @@ import { memo, useRef } from "react";
 import { formats, processMeta, steps } from "./data";
 import { SplitTitle, useSectionAnim, gsap } from "./anim";
 
-const eyebrow = "text-[11px] font-medium uppercase tracking-[0.2em] text-ink-soft sm:tracking-[0.28em]";
+const eyebrow = "text-[11px] font-medium uppercase tracking-[0.28em] text-ink-soft";
+const who = ["Tú me cuentas", "Yo propongo", "Yo grabo", "Tú publicas"];
 
 export const Process = memo(function Process() {
   const ref = useRef<HTMLElement>(null);
 
   useSectionAnim(ref, (root, mm) => {
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      const list = root.querySelector<HTMLElement>("[data-steps]");
-      if (list) {
-        // cards drop in one after another, like the hero's elements
-        gsap.from(list.querySelectorAll("[data-step]"), {
-          opacity: 0,
-          y: -40,
-          duration: 1.1,
-          ease: "expo.out",
-          stagger: 0.12,
-          scrollTrigger: { trigger: list, start: "top 82%", once: true },
-        });
-      }
-      gsap.from(root.querySelectorAll("[data-chip]"), {
+      root.querySelectorAll<HTMLElement>("[data-step]").forEach((row) => {
+        const rule = row.querySelector("[data-rule]");
+        const num = row.querySelector("[data-num]");
+        const body = row.querySelectorAll("[data-body]");
+        const tl = gsap.timeline({ scrollTrigger: { trigger: row, start: "top 82%", once: true } });
+        if (rule) tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "expo.inOut" });
+        tl.from(body, { yPercent: -60, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.08 }, 0.35);
+        // the numeral fills with ink as the row crosses the middle of the screen
+        if (num) {
+          gsap.fromTo(num, { "--fill": "0%" }, { "--fill": "100%", ease: "none", scrollTrigger: { trigger: row, start: "top 75%", end: "bottom 45%", scrub: 0.5 } });
+        }
+      });
+      gsap.from(root.querySelectorAll("[data-dish]"), {
         opacity: 0,
-        y: -14,
-        duration: 0.9,
+        y: -18,
+        duration: 1,
         ease: "expo.out",
         stagger: 0.06,
-        scrollTrigger: { trigger: root.querySelector("[data-chips]"), start: "top 90%", once: true },
+        scrollTrigger: { trigger: root.querySelector("[data-menu]"), start: "top 85%", once: true },
       });
     });
   });
@@ -36,31 +37,29 @@ export const Process = memo(function Process() {
     <section
       ref={ref}
       id="proceso"
+      data-folio="Nº 04 — Método"
       data-scene="#e6d6bf"
       aria-labelledby="proceso-title"
-      className="scroll-mt-4 overflow-x-clip py-[clamp(96px,12vw,170px)]"
+      className="scroll-mt-0 overflow-x-clip py-[clamp(112px,15vw,220px)]"
     >
-      <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-12">
+      <div className="mx-auto w-full max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="lg:grid lg:grid-cols-12 lg:items-end lg:gap-x-8">
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-8">
             <p data-fade className={eyebrow}>
-              Cómo trabajo
+              Nº 04 — Método
             </p>
-            <h2
-              id="proceso-title"
-              className="mt-6 max-w-[12ch] font-display text-[clamp(44px,8.5vw,104px)] font-medium leading-[0.98] tracking-[-0.02em] text-ink lg:text-[clamp(60px,7vw,104px)]"
-            >
-              <SplitTitle parts={[{ t: "Simple, claro y " }, { t: "a tu ritmo", em: true }, { t: "." }]} />
+            <h2 id="proceso-title" className="mt-6 font-display text-[clamp(50px,9.6vw,150px)] font-normal leading-[0.92] tracking-[-0.03em] text-ink">
+              <SplitTitle parts={[{ t: "Del brief " }, { t: "al feed", em: true }, { t: "." }]} />
             </h2>
           </div>
-          <div className="mt-6 sm:mt-8 lg:col-span-5 lg:mt-0 lg:pb-3">
-            <p data-fade data-delay="0.1" className="max-w-[28rem] text-[clamp(16px,1.6vw,19px)] leading-relaxed text-ink-soft">
-              Un proceso corto y sin fricciones: tú me cuentas lo que necesitas y yo me encargo del resto.
+          <div className="mt-8 lg:col-span-4 lg:mt-0 lg:pb-4">
+            <p data-fade data-delay="0.1" className="max-w-[24rem] text-[clamp(16px,1.5vw,18px)] leading-relaxed text-ink-soft">
+              Cuatro pasos, sin fricciones. Tú pones la marca; yo, la historia.
             </p>
-            <ul data-fade data-delay="0.15" className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[13px] font-medium text-ink">
+            <ul data-fade data-delay="0.15" className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[12px] font-medium uppercase tracking-[0.18em] text-ink">
               {processMeta.map((m) => (
-                <li key={m} className="flex items-center gap-3">
-                  <span aria-hidden className="h-1 w-1 rounded-full bg-ink/50" />
+                <li key={m} className="flex items-center gap-2.5">
+                  <span aria-hidden className="h-1.5 w-1.5 rotate-45 bg-oxblood" />
                   {m}
                 </li>
               ))}
@@ -68,50 +67,55 @@ export const Process = memo(function Process() {
           </div>
         </div>
 
-        <ol data-steps className="relative mt-[clamp(56px,8vw,104px)] grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-          {steps.map((s) => (
-            <li
-              key={s.n}
-              data-step
-              className="group relative flex flex-col rounded-[28px] border border-ink/10 bg-cream/70 p-7 shadow-[0_30px_50px_-40px_rgba(42,27,22,0.45)] backdrop-blur-[2px] transition-[transform,background-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:bg-cream sm:min-h-[340px] sm:p-8"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-display text-[15px] italic text-ink-soft">Paso</span>
-                <span aria-hidden className="relative z-10 grid h-[30px] w-[30px] place-items-center rounded-full border border-ink/15 bg-cream">
-                  <span className="block h-2 w-2 rounded-full bg-oxblood transition-transform duration-500 group-hover:scale-150" />
+        <ol className="mt-[clamp(64px,9vw,128px)]">
+          {steps.map((s, i) => (
+            <li key={s.n} data-step className="group relative">
+              <span aria-hidden data-rule className="absolute inset-x-0 top-0 h-px origin-left bg-ink/25" />
+              <div className="grid grid-cols-[auto_1fr] items-start gap-x-6 py-[clamp(28px,4vw,56px)] sm:gap-x-10 lg:grid-cols-12 lg:gap-x-8">
+                <span
+                  aria-hidden
+                  data-num
+                  className="v2-numeral font-display text-[clamp(64px,10vw,168px)] italic leading-[0.8] lg:col-span-3"
+                >
+                  {s.n}
                 </span>
-              </div>
-              <span aria-hidden className="mt-4 font-display text-[clamp(52px,7vw,96px)] italic sm:mt-6 leading-none text-ink/15 transition-colors duration-700 group-hover:text-oxblood/45">
-                {s.n}
-              </span>
-              <div className="pt-6 sm:pt-8">
-                <h3 className="font-display text-[clamp(28px,2.6vw,36px)] font-normal leading-none tracking-[-0.01em] text-ink">
-                  <span className="sr-only">{s.n}. </span>
-                  {s.title}
-                </h3>
-                <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">{s.text}</p>
+                <div className="overflow-hidden lg:col-span-4">
+                  <h3 data-body className="font-display text-[clamp(32px,3.6vw,56px)] leading-none tracking-[-0.02em] text-ink">
+                    <span className="sr-only">Paso {i + 1}: </span>
+                    {s.title}
+                  </h3>
+                  <p data-body className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-oxblood">
+                    {who[i]}
+                  </p>
+                </div>
+                <p data-body className="col-span-2 mt-5 max-w-[30rem] text-[clamp(16px,1.4vw,18px)] leading-relaxed text-ink-soft lg:col-span-5 lg:mt-1">
+                  {s.text}
+                </p>
               </div>
             </li>
           ))}
+          <li aria-hidden className="h-px bg-ink/25" />
         </ol>
 
-        <div className="mt-[clamp(64px,9vw,120px)] lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-8">
+        {/* the menu */}
+        <div className="mt-[clamp(80px,11vw,160px)] lg:grid lg:grid-cols-12 lg:gap-x-8">
           <div className="lg:col-span-4">
-            <h3 data-fade className={eyebrow}>
-              Qué puedo crear para ti
+            <h3 data-fade className="font-display text-[clamp(36px,4vw,60px)] leading-none tracking-[-0.02em] text-ink">
+              La <em className="italic text-oxblood">carta</em>
             </h3>
-            <p data-fade className="mt-4 text-[14px] text-ink-soft">
-              Formato vertical 9:16 · derechos de uso a acordar
+            <p data-fade className="mt-4 max-w-[18rem] text-[15px] leading-relaxed text-ink-soft">
+              Formato vertical 9:16, subtítulos incluidos. Derechos de uso a acordar en cada proyecto.
             </p>
           </div>
-          <ul data-chips className="mt-6 flex flex-wrap gap-2.5 lg:col-span-8 lg:mt-0">
-            {formats.map((f) => (
-              <li
-                key={f}
-                data-chip
-                className="rounded-full border border-ink/15 bg-cream/60 px-5 py-3 font-display text-[clamp(17px,1.6vw,21px)] text-ink transition-colors duration-500 hover:border-oxblood hover:bg-oxblood hover:text-cream"
-              >
-                {f}
+          <ul data-menu className="mt-10 lg:col-span-8 lg:mt-0">
+            {formats.map((f, i) => (
+              <li key={f.name} data-dish className="group flex items-baseline gap-4 border-b border-ink/10 py-4 first:pt-0">
+                <span className="w-7 shrink-0 font-display text-[14px] italic text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-display text-[clamp(22px,2.2vw,32px)] leading-tight text-ink transition-[color,transform] duration-500 group-hover:translate-x-2 group-hover:text-oxblood">
+                  {f.name}
+                </span>
+                <span aria-hidden className="v2-leader mx-1 hidden flex-1 sm:block" />
+                <span className="ml-auto text-right text-[13px] text-ink-soft sm:ml-0 sm:max-w-[16rem]">{f.note}</span>
               </li>
             ))}
           </ul>
