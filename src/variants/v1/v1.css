@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --color-cream: #f4eee3;
+  --color-paper: #efe8dc;
+  --color-paper-2: #e8dfd0;
+  --color-sand: #d6c3a9;
+  --color-ink: #2a1b16;
+  --color-ink-soft: #5b4a3f;
+  --color-oxblood: #5c1a1f;
+}
+
+html { background: var(--color-paper); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--color-oxblood); color: var(--color-cream); }
+:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 4px; }
+
+.a-card {
+  background: linear-gradient(165deg, #dccab2 0%, #d3bfa5 48%, #c7af93 100%);
+  isolation: isolate;
+}
+.a-hero-title {
+  font-size: clamp(130px, 33vw, 560px);
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+.a-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+.a-link {
+  background: linear-gradient(currentColor, currentColor) 100% 100% / 0% 1px no-repeat;
+  transition: background-size 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  padding-bottom: 3px;
+}
+.a-link:hover, .a-link:focus-visible { background-position: 0 100%; background-size: 100% 1px; }
+.a-cue {
+  display: inline-block;
+  width: 1px;
+  height: 28px;
+  background: currentColor;
+  transform-origin: top;
+  animation: a-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes a-cue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+.a-preview {
+  position: relative;
+  width: 220px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 999px 999px 0 0;
+  box-shadow: 0 40px 60px -30px rgba(42, 27, 22, 0.45);
+}
+.a-dropcap::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 5.4em;
+  line-height: 0.8;
+  padding: 0.06em 0.12em 0 0;
+  color: var(--color-oxblood);
+}
+.a-faq summary::-webkit-details-marker { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .a-cue { animation: none; }
+}

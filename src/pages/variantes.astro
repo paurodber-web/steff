@@ -1,0 +1,55 @@
+---
+import Base from "../variants/Base.astro";
+const base = import.meta.env.BASE_URL;
+const items = [
+  { n: "01", href: "variante-1/", name: "Atelier", note: "Lujo silencioso. Cormorant + Manrope. Pasarela horizontal, índice con vista previa al cursor, ritmo lento.", bg: "#efe8dc", fg: "#2a1b16" },
+  { n: "02", href: "variante-2/", name: "Estudio", note: "Gráfico y suizo. Archivo Condensed + JetBrains Mono. Cuadrícula visible, filtros animados, bloques de color.", bg: "#1f1411", fg: "#f4eee3" },
+  { n: "03", href: "variante-3/", name: "Diario", note: "Scrapbook táctil. Fraunces + DM Sans + Caveat. Pegatinas y polaroids arrastrables, trazos a mano.", bg: "#ecd2c6", fg: "#2a1b16" },
+  { n: "04", href: "variante-4/", name: "Cine", note: "Oscuro e inmersivo. Instrument Serif + Inter. Foco de luz, planos que se apilan, tira de película, créditos.", bg: "#5c1a1f", fg: "#f4eee3" },
+];
+---
+
+<Base title="Steff Ramírez · Variantes" theme="#efe8dc" fonts="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap">
+  <main>
+    <header>
+      <p class="eyebrow">Steff Ramírez — propuestas de diseño</p>
+      <h1>Cuatro <em>variantes</em></h1>
+      <p class="lead">La misma web, cuatro direcciones de arte. La versión actual sigue en <a href={base}>la portada</a>.</p>
+    </header>
+    <ol>
+      {items.map((it) => (
+        <li>
+          <a href={`${base}${it.href}`} style={`--bg:${it.bg};--fg:${it.fg}`}>
+            <span class="n">{it.n}</span>
+            <span class="name">{it.name}</span>
+            <span class="note">{it.note}</span>
+            <span class="go" aria-hidden="true">Ver →</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </main>
+</Base>
+
+<style is:global>
+  html, body { margin: 0; background: #efe8dc; color: #2a1b16; font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1280px; margin: 0 auto; padding: clamp(48px, 8vw, 110px) clamp(16px, 4vw, 48px); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #5b4a3f; margin: 0; }
+  h1 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: clamp(64px, 11vw, 180px); line-height: 0.9; margin: 20px 0 0; letter-spacing: -0.02em; }
+  h1 em { color: #5c1a1f; }
+  .lead { max-width: 34rem; font-size: 17px; line-height: 1.6; color: #5b4a3f; }
+  .lead a { color: inherit; }
+  ol { list-style: none; padding: 0; margin: clamp(40px, 6vw, 80px) 0 0; display: grid; gap: 12px; }
+  @media (min-width: 900px) { ol { grid-template-columns: repeat(2, 1fr); } }
+  li a {
+    display: grid; grid-template-rows: auto 1fr auto auto; gap: 14px; min-height: clamp(260px, 30vw, 380px); padding: clamp(24px, 3vw, 40px);
+    border-radius: clamp(28px, 3.5vw, 52px); background: var(--bg); color: var(--fg); text-decoration: none;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  li a:hover, li a:focus-visible { transform: translateY(-6px) rotate(-0.4deg); }
+  li a:focus-visible { outline: 3px solid #5c1a1f; outline-offset: 4px; }
+  .n { font-size: 12px; letter-spacing: 0.3em; opacity: 0.7; }
+  .name { font-family: "Instrument Serif", Georgia, serif; font-size: clamp(56px, 7vw, 110px); line-height: 0.9; align-self: end; }
+  .note { font-size: 15px; line-height: 1.55; opacity: 0.85; max-width: 30rem; }
+  .go { font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; }
+</style>

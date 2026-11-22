@@ -1,0 +1,15 @@
+---
+import Base from "../variants/Base.astro";
+import App from "../variants/v2/App";
+import { loadImages } from "../variants/images";
+import "../variants/v2/v2.css";
+const { hero, portrait } = await loadImages();
+---
+
+<Base
+  title="Steff Ramírez · Estudio"
+  theme="#e9dfcf"
+  fonts="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=JetBrains+Mono:wght@400;600&display=swap"
+>
+  <App hero={hero} portrait={portrait} client:load />
+</Base>

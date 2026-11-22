@@ -1,0 +1,15 @@
+---
+import Base from "../variants/Base.astro";
+import App from "../variants/v3/App";
+import { loadImages } from "../variants/images";
+import "../variants/v3/v3.css";
+const { hero, portrait } = await loadImages();
+---
+
+<Base
+  title="Steff Ramírez · Diario"
+  theme="#f2ebe0"
+  fonts="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=DM+Sans:wght@400;500;600&family=Caveat:wght@500;600&display=swap"
+>
+  <App hero={hero} portrait={portrait} client:load />
+</Base>
