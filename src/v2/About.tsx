@@ -19,7 +19,7 @@ const facts = [
 function Badge() {
   const text = "UGC Creator · Moda · Belleza · Lifestyle · Momlife · ";
   return (
-    <div aria-hidden className="absolute -right-3 top-[8%] z-20 grid h-[124px] w-[124px] place-items-center rounded-full bg-ink text-cream shadow-[0_20px_40px_-20px_rgba(42,27,22,0.6)] sm:-right-8 sm:h-[148px] sm:w-[148px]">
+    <div aria-hidden className="absolute -right-3 top-[8%] z-20 grid h-[124px] w-[124px] place-items-center rounded-full bg-oxblood text-cream shadow-[0_20px_40px_-20px_rgba(63,16,20,0.7)] sm:-right-8 sm:h-[148px] sm:w-[148px]">
       <svg data-badge viewBox="0 0 200 200" className="absolute inset-0 h-full w-full">
         <defs>
           <path id="about-badge-circle" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0" />
@@ -119,7 +119,7 @@ export const About = memo(function About({ image }: { image: HeroImage }) {
                 <p key={li}>
                   {l.split(" ").map((w, i) => (
                     <span key={i}>
-                      <span data-word className={w.startsWith("real") || w.startsWith("amiga") ? "inline-block italic" : "inline-block"}>
+                      <span data-word className={w.startsWith("real") || w.startsWith("amiga") ? "inline-block italic text-oxblood" : "inline-block"}>
                         {w}
                       </span>{" "}
                     </span>
@@ -127,7 +127,7 @@ export const About = memo(function About({ image }: { image: HeroImage }) {
                 </p>
               ))}
             </div>
-            <p data-fade className="mt-8 font-display text-[24px] italic text-ink-soft">
+            <p data-fade className="mt-8 font-display text-[24px] italic text-oxblood">
               — Steff
             </p>
 

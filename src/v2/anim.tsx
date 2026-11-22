@@ -107,12 +107,12 @@ export function SplitTitle({ parts, letters = false }: { parts: Part[]; letters?
                 <span key={`${pi}-${wi}`} className="inline-block whitespace-nowrap">
                   {letters ? (
                     w.split("").map((c, ci) => (
-                      <span key={ci} data-w className={p.em ? "inline-block italic" : "inline-block"}>
+                      <span key={ci} data-w className={p.em ? "inline-block italic text-oxblood" : "inline-block"}>
                         {c}
                       </span>
                     ))
                   ) : (
-                    <span data-w className={p.em ? "inline-block italic" : "inline-block"}>
+                    <span data-w className={p.em ? "inline-block italic text-oxblood" : "inline-block"}>
                       {w}
                     </span>
                   )}

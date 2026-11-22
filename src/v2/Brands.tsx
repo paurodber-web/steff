@@ -42,8 +42,8 @@ export const Brands = memo(function Brands({ onContact }: { onContact: () => voi
   return (
     <section ref={ref} aria-labelledby="marcas-title" className="overflow-x-clip">
       <div className="v2-frame">
-        <div data-band className="v2-radius grain relative isolate overflow-hidden bg-ink py-[clamp(64px,9vw,128px)] text-cream">
-          <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[140%] w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.1]" style={{ background: "radial-gradient(closest-side, #f4eee3, rgba(244,238,227,0))" }} />
+        <div data-band className="v2-radius grain relative isolate overflow-hidden bg-oxblood py-[clamp(64px,9vw,128px)] text-cream">
+          <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[140%] w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.1]" style={{ background: "radial-gradient(closest-side, #f4d9c8, rgba(244,217,200,0))" }} />
 
           <h2 id="marcas-title" data-fade className="relative px-5 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60 sm:tracking-[0.28em]">
             Marcas con las que he trabajado
@@ -70,7 +70,7 @@ export const Brands = memo(function Brands({ onContact }: { onContact: () => voi
               ¿Te encaja lo que <em className="italic">ves</em>?
             </p>
             <div data-fade data-delay="0.1">
-              <CtaButton onClick={onContact} className="bg-cream text-ink [&>span:first-child]:bg-sand [&>span:last-child]:bg-ink [&>span:last-child]:text-cream">
+              <CtaButton onClick={onContact} className="bg-cream text-ink [&>span:first-child]:bg-sand [&>span:last-child]:bg-oxblood [&>span:last-child]:text-cream">
                 Escríbeme
               </CtaButton>
             </div>

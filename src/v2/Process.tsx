@@ -78,10 +78,10 @@ export const Process = memo(function Process() {
               <div className="flex items-center justify-between">
                 <span className="font-display text-[15px] italic text-ink-soft">Paso</span>
                 <span aria-hidden className="relative z-10 grid h-[30px] w-[30px] place-items-center rounded-full border border-ink/15 bg-cream">
-                  <span className="block h-2 w-2 rounded-full bg-ink transition-transform duration-500 group-hover:scale-150" />
+                  <span className="block h-2 w-2 rounded-full bg-oxblood transition-transform duration-500 group-hover:scale-150" />
                 </span>
               </div>
-              <span aria-hidden className="mt-4 font-display text-[clamp(52px,7vw,96px)] italic sm:mt-6 leading-none text-ink/15 transition-colors duration-700 group-hover:text-ink/30">
+              <span aria-hidden className="mt-4 font-display text-[clamp(52px,7vw,96px)] italic sm:mt-6 leading-none text-ink/15 transition-colors duration-700 group-hover:text-oxblood/45">
                 {s.n}
               </span>
               <div className="pt-6 sm:pt-8">
@@ -109,7 +109,7 @@ export const Process = memo(function Process() {
               <li
                 key={f}
                 data-chip
-                className="rounded-full border border-ink/15 bg-cream/60 px-5 py-3 font-display text-[clamp(17px,1.6vw,21px)] text-ink transition-colors duration-500 hover:bg-ink hover:text-cream"
+                className="rounded-full border border-ink/15 bg-cream/60 px-5 py-3 font-display text-[clamp(17px,1.6vw,21px)] text-ink transition-colors duration-500 hover:border-oxblood hover:bg-oxblood hover:text-cream"
               >
                 {f}
               </li>

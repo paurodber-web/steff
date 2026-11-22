@@ -8,6 +8,8 @@
   --color-sand: #d6c3a9;
   --color-ink: #2a1b16;
   --color-ink-soft: #5b4a3f;
+  --color-oxblood: #5c1a1f;
+  --color-oxblood-deep: #3f1014;
 }
 
 html {
@@ -36,7 +38,7 @@ body {
 }
 
 ::selection {
-  background: var(--color-ink);
+  background: var(--color-oxblood);
   color: var(--color-cream);
 }
 

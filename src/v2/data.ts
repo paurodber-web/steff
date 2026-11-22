@@ -27,7 +27,7 @@ export const menuItems = [
    TODO (Steff): para añadir un video real a una tarjeta, sube el .mp4 (vertical 9:16, ligero, sin audio pesado)
    a `public/videos/` y un póster .jpg a `public/videos/posters/`, y rellena `src` y `poster` con
    `${import.meta.env.BASE_URL}videos/nombre.mp4`. Sin `src` se muestra el placeholder elegante. */
-export type Tone = "sand" | "cream" | "ink" | "hero" | "soft";
+export type Tone = "sand" | "cream" | "ink" | "hero" | "soft" | "oxblood";
 
 export type VideoItem = {
   brand: string; // TODO: sustituir por marcas reales
@@ -41,13 +41,13 @@ export type VideoItem = {
 export const portfolio: Record<(typeof services)[number]["id"], VideoItem[]> = {
   moda: [
     { brand: "Maison Aurea", format: "Try-on", duration: "0:24", tone: "sand" },
-    { brand: "Atelier Nube", format: "Lookbook", duration: "0:18", tone: "ink" },
+    { brand: "Atelier Nube", format: "Lookbook", duration: "0:18", tone: "oxblood" },
     { brand: "Hilo & Lino", format: "Reseña", duration: "0:31", tone: "cream" },
   ],
   belleza: [
     { brand: "Lumé Skin", format: "Rutina", duration: "0:36", tone: "hero" },
-    { brand: "Casa Rosal", format: "Unboxing", duration: "0:22", tone: "cream" },
-    { brand: "Alba Beauty", format: "Tutorial", duration: "0:42", tone: "soft" },
+    { brand: "Casa Rosal", format: "Unboxing", duration: "0:22", tone: "oxblood" },
+    { brand: "Alba Beauty", format: "Tutorial", duration: "0:42", tone: "cream" },
   ],
   lifestyle: [
     { brand: "Cala Studio", format: "Un día conmigo", duration: "0:28", tone: "cream" },
@@ -56,8 +56,8 @@ export const portfolio: Record<(typeof services)[number]["id"], VideoItem[]> = {
   ],
   momlife: [
     { brand: "Pequeño Mundo", format: "Testimonial", duration: "0:33", tone: "hero" },
-    { brand: "Brote Kids", format: "Unboxing", duration: "0:26", tone: "cream" },
-    { brand: "Nido Baby", format: "Reseña", duration: "0:29", tone: "soft" },
+    { brand: "Brote Kids", format: "Unboxing", duration: "0:26", tone: "oxblood" },
+    { brand: "Nido Baby", format: "Reseña", duration: "0:29", tone: "cream" },
   ],
 };
 

@@ -35,6 +35,7 @@ export const Contact = memo(function Contact() {
     <section ref={ref} id="contacto" aria-labelledby="contacto-title" className="scroll-mt-0">
       <div className="v2-frame">
         <div data-card className="v2-radius grain relative isolate overflow-hidden bg-ink text-cream">
+          <div aria-hidden className="pointer-events-none absolute -bottom-[30%] left-1/2 h-[80%] w-[130%] -translate-x-1/2 rounded-full opacity-70" style={{ background: "radial-gradient(closest-side, #5c1a1f, rgba(92,26,31,0))" }} />
           <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[60%] w-[120%] -translate-x-1/2 rounded-full opacity-[0.12]" style={{ background: "radial-gradient(closest-side, #f4eee3, rgba(244,238,227,0))" }} />
           <div className="relative mx-auto flex w-full max-w-[1200px] flex-col px-5 pb-6 pt-[clamp(72px,10vw,140px)] sm:px-8 lg:px-12">
             <p data-rise className="text-center text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60 sm:tracking-[0.28em]">

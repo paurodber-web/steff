@@ -65,7 +65,7 @@ export const Faq = memo(function Faq({ onContact }: { onContact: () => void }) {
                     >
                       <span className="w-6 shrink-0 pt-1.5 font-display text-[15px] italic text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
                       <span className="flex-1 font-display text-[clamp(21px,2.4vw,28px)] leading-snug tracking-[-0.01em] text-ink transition-[font-style] group-hover:italic">{f.q}</span>
-                      <span className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ink/20 text-ink transition-colors duration-500 group-hover:bg-ink group-hover:text-cream">
+                      <span className={cn("mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-colors duration-500", isOpen ? "border-oxblood bg-oxblood text-cream" : "border-ink/20 text-ink group-hover:border-oxblood group-hover:bg-oxblood group-hover:text-cream")}>
                         <PlusIcon className={cn("h-4 w-4 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]", isOpen && "rotate-[135deg]")} />
                       </span>
                     </button>

@@ -4,6 +4,7 @@ import { PlayIcon, SoundIcon } from "./Icons";
 import type { Tone, VideoItem } from "./data";
 
 const tones: Record<Tone, { bg: string; dark: boolean }> = {
+  oxblood: { bg: "linear-gradient(170deg,#7a2a2f 0%,#5c1a1f 55%,#3f1014 100%)", dark: true },
   sand: { bg: "linear-gradient(165deg,#e3d5bf 0%,#d6c3a9 100%)", dark: false },
   cream: { bg: "linear-gradient(165deg,#f9f4ec 0%,#e8ddcb 100%)", dark: false },
   hero: { bg: "linear-gradient(165deg,#dccab2 0%,#d3bfa5 48%,#c7af93 100%)", dark: false },
