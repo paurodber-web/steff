@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hero, type HeroImage } from "./Hero";
-import { InfoSection, SiteFooter } from "./InfoSection";
 import { MenuOverlay } from "./MenuOverlay";
 import { ContactOverlay } from "./ContactOverlay";
 
@@ -55,11 +54,7 @@ export default function Page({ image }: { image: HeroImage }) {
     <>
       <main data-v2-bg>
         <Hero image={image} onMenu={() => openOverlay("menu")} onContact={() => openOverlay("contact")} />
-        <InfoSection onContact={() => openOverlay("contact")} />
       </main>
-      <div data-v2-bg>
-        <SiteFooter />
-      </div>
       <MenuOverlay open={active === "menu"} onClose={close} onNavigate={navigate} onContact={() => openOverlay("contact")} />
       <ContactOverlay open={active === "contact"} onClose={close} />
     </>
