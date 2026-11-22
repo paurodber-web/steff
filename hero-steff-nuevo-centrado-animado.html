@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Steff Ramirez</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Poppins:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eacdb8; color: #28140d; font-family: Arial, sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+    .hero { position: relative; isolation: isolate; overflow: hidden; min-height: 600px; height: 100svh; background: radial-gradient(ellipse at 50% 35%, rgba(255, 244, 232, .45), transparent 55%), radial-gradient(ellipse at 30% 40%, #f4ddca, transparent 65%), #eacdb8; }
+    .hero::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(103, 70, 51, .16), transparent 42%), linear-gradient(155deg, transparent 44%, rgba(103, 70, 51, .13) 54%, transparent 63%, transparent 69%, rgba(103, 70, 51, .16) 79%, transparent 89%), radial-gradient(ellipse at center, transparent 48%, rgba(103, 70, 51, .12) 100%); }
+    .hero::after { content: ''; position: absolute; z-index: 3; inset: 55% 0 0; pointer-events: none; background: linear-gradient(to bottom, transparent, rgba(234, 205, 184, .35) 52%, #eacdb8 100%); }
+    .hero__portrait, .hero__shadow { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+    .hero__shadow { filter: drop-shadow(-45px 85px 18px rgba(103, 70, 51, .58)); }
+    .hero__portrait::before, .hero__shadow::before { content: ''; position: absolute; top: 5svh; bottom: 0; left: 50%; width: max(100vw, 177.7svh); transform: translateX(-73%); background: url('steff.png') top left / 100% auto no-repeat; }
+    .header { position: absolute; z-index: 5; inset: 0 0 auto; height: 71px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 4.8%; border-bottom: 1px solid rgba(66, 40, 28, .22); }
+    .brand { font: 32px 'Mr Dafoe', cursive; letter-spacing: .02em; white-space: nowrap; }
+    .nav { display: flex; gap: clamp(1.5rem, 3.6vw, 3.2rem); font-size: 13px; }
+    .menu-toggle { display: none; }
+    .book { justify-self: end; border: 1px solid rgba(66, 40, 28, .3); border-radius: 99px; padding: 9px 20px; font-size: 13px; }
+    .grid-lines { position: absolute; inset: 0 4.8%; border-inline: 1px solid rgba(66, 40, 28, .18); pointer-events: none; }
+    .grid-lines::before, .grid-lines::after { content: ''; position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(66, 40, 28, .16); }
+    .grid-lines::before { left: 18.5%; } .grid-lines::after { right: 18.5%; }
+    .hero__name { position: absolute; inset: 15% 4.8% auto; margin: 0; color: #4a0404; font: normal 20vw/.76 'Times New Roman', serif; letter-spacing: -.055em; text-align: center; white-space: nowrap; }
+    .hero__name span { display: block; }
+    .hero__surname { position: relative; z-index: 3; margin-top: .13em; }
+    @media (max-width: 900px) { .header { grid-template-columns: 1fr auto; } .nav { grid-column: 1 / -1; grid-row: 2; justify-content: center; padding: 12px 0; } .header { height: auto; min-height: 70px; padding-top: 18px; } .hero__name { top: 22%; font-size: 20vw; } }
+    @media (max-width: 600px) {
+      .hero { min-height: 600px; height: 100svh; }
+      .header { min-height: 72px; padding: 0 4.8%; align-content: center; }
+      .brand { font-size: 27px; }
+      .book { font-size: 11px; padding: 10px 12px; }
+      .nav { gap: 1rem; font-size: 11px; flex-wrap: wrap; }
+      .js-menu .header { grid-template-columns: 1fr auto auto; gap: 1rem; }
+      .js-menu .menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-size: 11px; cursor: pointer; }
+      .js-menu .nav { position: absolute; top: 100%; left: 0; right: 0; display: none; padding: 1rem 4.8% 1.25rem; background: #f0d7c4; border-bottom: 1px solid rgba(66, 40, 28, .22); }
+      .js-menu .nav.is-open { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+      .js-menu .nav a { padding: .85rem 0; }
+      .hero__portrait::before, .hero__shadow::before { top: auto; bottom: 0; width: max(100vw, 125svh); aspect-ratio: 1672 / 941; }
+      .hero__name { top: 25%; }
+      .hero__surname { z-index: 1; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .header, .grid-lines { animation: fade-in 1500ms cubic-bezier(.23, 1, .32, 1) 200ms both; }
+      .hero__name span { animation: rise-in 2000ms cubic-bezier(.23, 1, .32, 1) 200ms both; }
+      .hero__surname { animation-delay: 1800ms !important; }
+      .hero__shadow { animation: portrait-in 2400ms cubic-bezier(.23, 1, .32, 1) 850ms both; }
+      .hero__portrait { animation: portrait-in 2400ms cubic-bezier(.23, 1, .32, 1) 850ms both; }
+      @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes portrait-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero" id="inicio" aria-label="Steff Ramirez">
+      <header class="header">
+        <a class="brand" href="#inicio">Steff</a>
+        <nav class="nav" id="main-nav" aria-label="Main navigation">
+          <a href="#biografia">ABOUT</a><a href="#services">SERVICES</a><a href="#portfolio">PORTFOLIO</a><a href="#contact">CONTACT</a>
+        </nav>
+        <a class="book" href="#contact">BOOK NOW</a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">MENU</button>
+      </header>
+      <div class="grid-lines" aria-hidden="true"></div>
+      <h1 class="hero__name"><span>STEFF</span><span class="hero__surname">RAMIREZ</span></h1>
+      <div class="hero__shadow" aria-hidden="true"></div>
+      <div class="hero__portrait" aria-hidden="true"></div>
+    </section>
+  </main>
+  <script>
+    const heroName = document.querySelector('.hero__name');
+    const surname = document.querySelector('.hero__surname');
+    const fitName = () => {
+      heroName.style.fontSize = '100px';
+      const range = document.createRange();
+      range.selectNodeContents(surname);
+      const textWidth = range.getBoundingClientRect().width;
+      if (textWidth) heroName.style.fontSize = `${100 * heroName.clientWidth / textWidth}px`;
+    };
+    new ResizeObserver(fitName).observe(document.querySelector('.hero'));
+    document.fonts.ready.then(fitName);
+    document.documentElement.classList.add('js-menu');
+    const menuButton = document.querySelector('.menu-toggle');
+    const navigation = document.querySelector('#main-nav');
+    const setMenu = (open) => {
+      navigation.classList.toggle('is-open', open);
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.textContent = open ? 'CLOSE' : 'MENU';
+    };
+    menuButton.addEventListener('click', () => setMenu(menuButton.getAttribute('aria-expanded') !== 'true'));
+    navigation.addEventListener('click', (event) => { if (event.target.closest('a')) setMenu(false); });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
+        setMenu(false);
+        menuButton.focus();
+      }
+    });
+  </script>
+</body>
+</html>
