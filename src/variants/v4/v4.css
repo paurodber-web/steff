@@ -1,82 +1,25 @@
-@import "tailwindcss";
-
-@theme {
-  --font-display: "Instrument Serif", Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-cream: #f4eee3;
-  --color-sand: #d6c3a9;
-  --color-ink: #2a1b16;
-  --color-ink-soft: #5b4a3f;
-  --color-oxblood: #5c1a1f;
-  --color-night: #120b09;
-}
-
-html { background: var(--color-night); -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0;
-  background: var(--color-night);
-  color: var(--color-cream);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-::selection { background: #d99a8c; color: var(--color-night); }
-:focus-visible { outline: 2px solid #d99a8c; outline-offset: 4px; }
-em { font-style: italic; }
-
-.d-card {
-  --lx: 50;
-  --ly: 40;
-  background: linear-gradient(165deg, #dccab2 0%, #d3bfa5 48%, #c7af93 100%);
-  color: var(--color-ink);
-}
-.d-hero-title { font-size: clamp(60px, 13vw, 230px); letter-spacing: -0.02em; }
-@media (min-width: 640px) { .d-hero-title { white-space: nowrap; } }
-.d-hero-title em { color: var(--color-oxblood); }
-/* studio light: bright where the pointer is, falls off to shadow */
-.d-spot {
-  background: radial-gradient(circle at calc(var(--lx) * 1%) calc(var(--ly) * 1%), rgba(255, 244, 228, 0.28) 0, transparent 22%, rgba(18, 11, 9, 0.18) 48%, rgba(18, 11, 9, 0.55) 100%);
+/* Escena — builds on the homepage stylesheet (v2.css) */
+.s-card { --lx: 50; --ly: 38; }
+/* soft studio light that follows the pointer; the edges fall into gentle shadow */
+.s-spot {
+  background: radial-gradient(circle at calc(var(--lx) * 1%) calc(var(--ly) * 1%), rgba(255, 246, 232, 0.35) 0, transparent 24%, rgba(42, 27, 22, 0.06) 50%, rgba(42, 27, 22, 0.28) 100%);
   mix-blend-mode: multiply;
 }
-.d-link {
-  background: linear-gradient(currentColor, currentColor) 100% 100% / 0% 1px no-repeat;
-  transition: background-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  padding-bottom: 3px;
-}
-.d-link:hover, .d-link:focus-visible { background-position: 0 100%; background-size: 100% 1px; }
-.d-stack { box-shadow: 0 -30px 60px -20px rgba(0, 0, 0, 0.6); transform-origin: 50% 0%; }
-/* sprocket holes above and below the film strip */
-.d-strip {
-  background-color: #0a0605;
-  background-image:
-    radial-gradient(circle, transparent 0 0, transparent 0),
-    repeating-linear-gradient(90deg, transparent 0 14px, rgba(244, 238, 227, 0.85) 14px 30px, transparent 30px 44px);
-  background-size: 100% 12px, 44px 12px;
-  background-position: 0 0, 0 8px;
-  background-repeat: no-repeat, repeat-x;
+.s-stack { box-shadow: 0 -30px 60px -30px rgba(42, 27, 22, 0.35); }
+.s-strip {
   position: relative;
+  background: #2a1b16;
+  background-image: repeating-linear-gradient(90deg, transparent 0 14px, rgba(244, 238, 227, 0.9) 14px 30px, transparent 30px 44px);
+  background-size: 44px 12px;
+  background-position: 0 9px;
+  background-repeat: repeat-x;
 }
-.d-strip::after {
+.s-strip::after {
   content: "";
   position: absolute;
   inset-inline: 0;
-  bottom: 8px;
+  bottom: 9px;
   height: 12px;
-  background-image: repeating-linear-gradient(90deg, transparent 0 14px, rgba(244, 238, 227, 0.85) 14px 30px, transparent 30px 44px);
+  background-image: repeating-linear-gradient(90deg, transparent 0 14px, rgba(244, 238, 227, 0.9) 14px 30px, transparent 30px 44px);
   pointer-events: none;
 }
-.d-strip > li { position: relative; z-index: 1; }
-.d-dot {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 100;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 999px;
-  background: #fff;
-  mix-blend-mode: difference;
-  pointer-events: none;
-  transition: width 0.4s, height 0.4s, margin 0.4s;
-}
-.d-dot[data-big="1"] { width: 56px; height: 56px; margin: -28px 0 0 -28px; }

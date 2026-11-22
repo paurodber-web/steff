@@ -2,14 +2,15 @@
 import Base from "../variants/Base.astro";
 import App from "../variants/v4/App";
 import { loadImages } from "../variants/images";
+import "../v2/v2.css";
 import "../variants/v4/v4.css";
 const { hero, portrait } = await loadImages();
 ---
 
 <Base
-  title="Steff Ramírez · Cine"
-  theme="#120b09"
-  fonts="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
+  title="Steff Ramírez · Escena"
+  theme="#f4eee3"
+  fonts="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Instrument+Sans:wght@400;500;600&display=swap"
 >
   <App hero={hero} portrait={portrait} client:load />
 </Base>
