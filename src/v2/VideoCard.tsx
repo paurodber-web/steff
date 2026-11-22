@@ -97,7 +97,7 @@ export function VideoCard({ item, category }: { item: VideoItem; category: strin
 
       {/* label */}
       <div className={cn("absolute inset-x-0 bottom-0 z-10 p-5 sm:p-6", hasVideo && "bg-gradient-to-t from-ink/70 to-transparent pt-16 text-cream")}>
-        <p className="font-display text-[22px] leading-tight">
+        <p className="font-display text-[clamp(18px,1.6vw,22px)] leading-tight">
           <span className="italic opacity-70">para</span> {item.brand}
         </p>
         <p className="mt-1.5 text-[11px] font-medium uppercase tracking-[0.2em] opacity-70 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:translate-y-2 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:translate-y-0 [@media(hover:hover)]:group-hover:opacity-70 group-focus-within:translate-y-0 group-focus-within:opacity-70">

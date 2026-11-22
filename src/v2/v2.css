@@ -12,7 +12,8 @@
 
 html {
   margin: 0;
-  background: var(--color-cream);
+  background: var(--page, var(--color-cream));
+  transition: background-color 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
 }
@@ -26,7 +27,7 @@ html {
 body {
   margin: 0;
   min-height: 100svh;
-  background: var(--color-cream);
+  background: transparent;
   font-family: var(--font-sans);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
@@ -379,3 +380,17 @@ body {
 .faq-panel[data-open="true"] { grid-template-rows: 1fr; }
 .faq-panel > div { overflow: hidden; min-height: 0; }
 @media (prefers-reduced-motion: reduce) { .faq-panel { transition: none; } }
+
+/* Second marquee row runs the other way, a little faster */
+.marquee--rev .marquee__track { animation-direction: reverse; }
+.marquee__track--fast { animation-duration: 48s; }
+
+/* Huge outlined category word behind each portfolio block */
+.v2-ghost {
+  font-size: clamp(120px, 24vw, 340px);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(42, 27, 22, 0.07);
+}
+@media (prefers-reduced-motion: reduce) {
+  html { transition: none; }
+}

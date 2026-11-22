@@ -24,9 +24,9 @@ export const Faq = memo(function Faq({ onContact }: { onContact: () => void }) {
   });
 
   return (
-    <section ref={ref} id="faq" aria-labelledby="faq-title" className="scroll-mt-4 overflow-x-clip pb-[clamp(96px,14vw,200px)]">
+    <section ref={ref} id="faq" data-scene="#ede1cf" aria-labelledby="faq-title" className="scroll-mt-4 overflow-x-clip py-[clamp(96px,12vw,170px)]">
       <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-12">
-        <div className="border-t border-ink/15 pt-[clamp(40px,6vw,72px)] lg:grid lg:grid-cols-12 lg:gap-x-8">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-28">
               <p data-fade className={eyebrow}>
@@ -49,11 +49,11 @@ export const Faq = memo(function Faq({ onContact }: { onContact: () => void }) {
             </div>
           </div>
 
-          <ul data-faq-list className="mt-[clamp(40px,6vw,64px)] border-t border-ink/15 lg:col-span-7 lg:mt-0">
+          <ul data-faq-list className="mt-[clamp(40px,6vw,64px)] rounded-[28px] bg-cream/70 px-5 shadow-[0_30px_60px_-45px_rgba(42,27,22,0.45)] ring-1 ring-ink/10 sm:px-8 lg:col-span-7 lg:mt-0">
             {faqs.map((f, i) => {
               const isOpen = open === i;
               return (
-                <li key={f.q} data-faq-row className="border-b border-ink/15">
+                <li key={f.q} data-faq-row className="border-b border-ink/10 last:border-b-0">
                   <h3>
                     <button
                       type="button"

@@ -7,6 +7,9 @@ import { Process } from "./Process";
 import { About } from "./About";
 import { Faq } from "./Faq";
 import { Contact } from "./Contact";
+import { Brands } from "./Brands";
+import { FloatingBar } from "./FloatingBar";
+import { useScenes } from "./anim";
 
 type Overlay = "menu" | "contact" | null;
 
@@ -29,6 +32,10 @@ export default function Page({ image, aboutImage }: { image: HeroImage; aboutIma
   }, []);
 
   const openContact = useCallback(() => openOverlay("contact"), [openOverlay]);
+  const openMenu = useCallback(() => openOverlay("menu"), [openOverlay]);
+
+  // page background follows the section in view (cream → sand → cream → warm paper)
+  useScenes();
 
   // Close the menu, then smooth-scroll to a section that exists at every breakpoint.
   const navigate = useCallback((id: string) => {
@@ -60,13 +67,15 @@ export default function Page({ image, aboutImage }: { image: HeroImage; aboutIma
   return (
     <>
       <main data-v2-bg>
-        <Hero image={image} onMenu={() => openOverlay("menu")} onContact={openContact} />
-        <Portfolio onContact={openContact} />
+        <Hero image={image} onMenu={openMenu} onContact={openContact} />
+        <Portfolio />
+        <Brands onContact={openContact} />
         <Process />
         <About image={aboutImage} />
         <Faq onContact={openContact} />
         <Contact />
       </main>
+      <FloatingBar onMenu={openMenu} onContact={openContact} hidden={active !== null} />
       <MenuOverlay open={active === "menu"} onClose={close} onNavigate={navigate} onContact={() => openOverlay("contact")} />
       <ContactOverlay open={active === "contact"} onClose={close} />
     </>

@@ -125,4 +125,29 @@ export function SplitTitle({ parts, letters = false }: { parts: Part[]; letters?
   );
 }
 
+/**
+ * Sections carrying data-scene="#hex" tint the whole page while they sit under the middle of the
+ * screen. Colour only (no movement), cross-faded by CSS, so it never gets in the way of reading.
+ */
+export function useScenes() {
+  useEffect(() => {
+    registerGsap();
+    const root = document.documentElement;
+    const triggers = Array.from(document.querySelectorAll<HTMLElement>("[data-scene]")).map((el) =>
+      ScrollTrigger.create({
+        trigger: el,
+        start: "top 55%",
+        end: "bottom 55%",
+        onToggle: (self) => {
+          if (self.isActive) root.style.setProperty("--page", el.dataset.scene ?? "");
+        },
+      }),
+    );
+    return () => {
+      triggers.forEach((t) => t.kill());
+      root.style.removeProperty("--page");
+    };
+  }, []);
+}
+
 export { gsap, ScrollTrigger };
