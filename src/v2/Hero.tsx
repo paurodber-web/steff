@@ -97,7 +97,7 @@ export function Hero({ image, onMenu, onContact }: { image: HeroImage; onMenu: (
 
         {/* scroll cue */}
         <a
-          href="#sobre-mi"
+          href="#portafolio"
           className="anim-down relative z-30 flex h-[var(--cue-h)] flex-col lg:absolute lg:inset-x-0 lg:bottom-0 lg:h-14 items-center justify-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.24em] text-ink-soft transition-colors hover:text-ink active:text-ink focus-visible:text-ink focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-ink"
           style={d(2.4)}
         >

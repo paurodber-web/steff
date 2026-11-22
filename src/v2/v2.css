@@ -343,3 +343,39 @@ body {
   .v2-flank--l > li:nth-child(2) { translate: 3.5rem 0; }
   .v2-flank--r > li:nth-child(2) { translate: -3.5rem 0; }
 }
+
+/* ============================================================
+   Sections below the hero
+   ============================================================ */
+.v2-radius { border-radius: 28px; }
+@media (min-width: 640px) { .v2-radius { border-radius: 40px; } }
+@media (min-width: 1024px) { .v2-radius { border-radius: 52px; } }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Brand marquee: two identical rows slide by exactly one row width */
+.marquee {
+  overflow-x: clip;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
+}
+.marquee__track { display: flex; width: max-content; animation: marquee 70s linear infinite; }
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee__row { display: flex; flex: none; align-items: center; margin: 0; padding: 0; list-style: none; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee { -webkit-mask-image: none; mask-image: none; }
+  .marquee__track { width: auto; animation: none; flex-wrap: wrap; justify-content: center; padding-inline: 20px; }
+  .marquee__row { flex-wrap: wrap; justify-content: center; row-gap: 12px; }
+  .marquee__row[aria-hidden="true"] { display: none; }
+}
+
+/* FAQ accordion: animate height through grid rows */
+.faq-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.faq-panel[data-open="true"] { grid-template-rows: 1fr; }
+.faq-panel > div { overflow: hidden; min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .faq-panel { transition: none; } }

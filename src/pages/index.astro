@@ -2,6 +2,7 @@
 import { getImage } from "astro:assets";
 import Page from "../v2/Page";
 import heroSrc from "../assets/steff-hero.png";
+import aboutSrc from "../assets/steff.webp";
 import "../v2/v2.css";
 
 const widths = [360, 540, 701];
@@ -15,6 +16,19 @@ const image = {
   sizes: "(min-width: 1024px) 480px, 340px",
   width: Number(largest.attributes.width ?? heroSrc.width),
   height: Number(largest.attributes.height ?? heroSrc.height),
+};
+
+const aboutWidths = [380, 520, 760];
+const aboutVariants = await Promise.all(
+  aboutWidths.map((width) => getImage({ src: aboutSrc, format: "webp", quality: 80, width })),
+);
+const aboutLargest = aboutVariants[aboutVariants.length - 1];
+const aboutImage = {
+  src: aboutLargest.src,
+  srcSet: aboutVariants.map((v, i) => `${v.src} ${aboutWidths[i]}w`).join(", "),
+  sizes: "(min-width: 1024px) 460px, 380px",
+  width: Number(aboutLargest.attributes.width ?? aboutSrc.width),
+  height: Number(aboutLargest.attributes.height ?? aboutSrc.height),
 };
 
 const title = "Steff Ramírez · UGC Creator";
@@ -40,6 +54,6 @@ const description =
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <Page image={image} client:load />
+    <Page image={image} aboutImage={aboutImage} client:load />
   </body>
 </html>

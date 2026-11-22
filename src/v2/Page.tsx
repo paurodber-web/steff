@@ -2,10 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Hero, type HeroImage } from "./Hero";
 import { MenuOverlay } from "./MenuOverlay";
 import { ContactOverlay } from "./ContactOverlay";
+import { Portfolio } from "./Portfolio";
+import { Process } from "./Process";
+import { About } from "./About";
+import { Faq } from "./Faq";
+import { Contact } from "./Contact";
 
 type Overlay = "menu" | "contact" | null;
 
-export default function Page({ image }: { image: HeroImage }) {
+export default function Page({ image, aboutImage }: { image: HeroImage; aboutImage: HeroImage }) {
   const [active, setActive] = useState<Overlay>(null);
   const trigger = useRef<HTMLElement | null>(null);
 
@@ -22,6 +27,8 @@ export default function Page({ image }: { image: HeroImage }) {
     trigger.current = null;
     if (el) window.requestAnimationFrame(() => el.focus({ preventScroll: true }));
   }, []);
+
+  const openContact = useCallback(() => openOverlay("contact"), [openOverlay]);
 
   // Close the menu, then smooth-scroll to a section that exists at every breakpoint.
   const navigate = useCallback((id: string) => {
@@ -53,7 +60,12 @@ export default function Page({ image }: { image: HeroImage }) {
   return (
     <>
       <main data-v2-bg>
-        <Hero image={image} onMenu={() => openOverlay("menu")} onContact={() => openOverlay("contact")} />
+        <Hero image={image} onMenu={() => openOverlay("menu")} onContact={openContact} />
+        <Portfolio onContact={openContact} />
+        <Process />
+        <About image={aboutImage} />
+        <Faq onContact={openContact} />
+        <Contact />
       </main>
       <MenuOverlay open={active === "menu"} onClose={close} onNavigate={navigate} onContact={() => openOverlay("contact")} />
       <ContactOverlay open={active === "contact"} onClose={close} />
