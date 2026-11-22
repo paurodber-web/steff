@@ -1,334 +1,258 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Flip } from "gsap/Flip";
-import { EMAIL, socials, services, portfolio, brands, steps, faqs, formats, type VideoItem } from "../../v2/data";
+import { useRef, useState } from "react";
+import { EMAIL, socials, services, portfolio, brands, steps, faqs, formats } from "../../v2/data";
 import type { Img } from "../images";
-import { gsap, ScrollTrigger, SplitText, useMotion, useLenis, useCopy, useReduced } from "../kit";
-
-gsap.registerPlugin(Flip);
+import { gsap, SplitText, useMotion, useCopy } from "../kit";
+import { Shell } from "../Shell";
+import { EleHero, Letters } from "../EleHero";
+import { Shot } from "../parts";
 
 type P = { hero: Img; portrait: Img };
-const tone: Record<string, string> = { cream: "#efe6d6", sand: "#d8c29f", blush: "#e5c9bb", hero: "#d6c3a9", rose: "#c09389", oxblood: "#5c1a1f" };
-const crop: Record<string, CSSProperties> = {
-  face: { objectPosition: "50% 0%", transform: "scale(2.1)", transformOrigin: "50% 18%" },
-  torso: { objectPosition: "50% 0%", transform: "scale(1.35)", transformOrigin: "50% 28%" },
-  full: { objectPosition: "50% 0%" },
-};
-const mono = "font-mono text-[11px] uppercase tracking-[0.08em]";
+const kicker = "text-[11px] font-medium uppercase tracking-[0.28em] text-ink-soft";
 
-function Shot({ img, item, sizes }: { img: Img; item: VideoItem; sizes: string }) {
+/* ------------------------------------------------------------------ HERO: the cover */
+function Cover({ hero, onMenu, onContact }: { hero: Img; onMenu: () => void; onContact: () => void }) {
+  const lines = [
+    { k: "Moda", t: "3 looks con un solo blazer" },
+    { k: "Belleza", t: "Mi piel en 5 minutos" },
+    { k: "Lifestyle", t: "Un martes cualquiera" },
+    { k: "Momlife", t: "Lo que nadie te cuenta" },
+  ];
   return (
-    <div className="absolute inset-0 overflow-hidden" style={{ background: tone[item.tone] }}>
-      <img src={img.src} srcSet={img.srcSet} sizes={sizes} alt="" loading="lazy" draggable={false} className="absolute inset-0 h-full w-full object-cover mix-blend-multiply grayscale-[0.2]" style={{ ...crop[item.crop], filter: item.tone === "oxblood" ? "grayscale(1) contrast(1.2) brightness(1.2)" : "contrast(1.05)" }} />
-    </div>
+    <EleHero
+      hero={hero}
+      onMenu={onMenu}
+      onContact={onContact}
+      flanks={false}
+      title={<Letters />}
+      back={<div aria-hidden className="v2-glow" />}
+      front={
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-30 hidden lg:block">
+          <div className="absolute left-12 top-[44%] flex w-[19vw] max-w-[260px] flex-col gap-7">
+            {lines.slice(0, 2).map((l) => (
+              <p key={l.k} data-in className="e-line">
+                <span className={kicker}>{l.k}</span>
+                <span className="mt-2 block font-display text-[clamp(20px,1.7vw,26px)] italic leading-[1.1] text-ink">{l.t}</span>
+              </p>
+            ))}
+          </div>
+          <div className="absolute right-12 top-[44%] flex w-[19vw] max-w-[260px] flex-col gap-7 text-right">
+            {lines.slice(2).map((l) => (
+              <p key={l.k} data-in className="e-line e-line--r">
+                <span className={kicker}>{l.k}</span>
+                <span className="mt-2 block font-display text-[clamp(20px,1.7vw,26px)] italic leading-[1.1] text-ink">{l.t}</span>
+              </p>
+            ))}
+          </div>
+          <p data-in className={`${kicker} absolute left-12 top-[30%]`}>Nº 12 — Edición para marcas</p>
+          <svg data-in viewBox="0 0 120 40" className="absolute bottom-16 right-12 h-10 w-[120px] text-ink/70">
+            {Array.from({ length: 38 }).map((_, i) => (
+              <rect key={i} x={i * 3.1} y="0" width={i % 3 ? 1 : 2} height={i % 5 ? 30 : 34} fill="currentColor" />
+            ))}
+          </svg>
+        </div>
+      }
+      motion={(root) => {
+        const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+        tl.from(root, { clipPath: "inset(0 0 100% 0 round 52px)", duration: 1.3, ease: "expo.inOut" })
+          .from(root.querySelectorAll("[data-l]"), { yPercent: -40, opacity: 0, duration: 1.3, stagger: 0.07 }, 0.5)
+          .from(root.querySelector("[data-fig]"), { clipPath: "inset(0 0 100% 0)", duration: 1.6 }, 0.8)
+          .from(root.querySelectorAll(".e-line:not(.e-line--r)"), { x: -40, opacity: 0, duration: 1.1, stagger: 0.1 }, 1.4)
+          .from(root.querySelectorAll(".e-line--r"), { x: 40, opacity: 0, duration: 1.1, stagger: 0.1 }, 1.4)
+          .from(root.querySelectorAll("[data-in]:not(.e-line)"), { opacity: 0, y: -10, duration: 0.9, stagger: 0.05 }, 1.6);
+        gsap.to(root.querySelector("[data-fig]"), { yPercent: 6, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.6 } });
+        gsap.to(root.querySelector(".v2-title"), { yPercent: -30, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.6 } });
+      }}
+    />
   );
 }
 
-/** Mono label that scrambles into place when it enters. */
-function Scr({ children, className }: { children: string; className?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  useMotion(ref, (el) => {
-    gsap.to(el, { duration: 1.1, scrambleText: { text: children, chars: "01#/—+", speed: 0.6 }, scrollTrigger: { trigger: el, start: "top 95%", once: true } });
-  });
-  return <span ref={ref} className={className}>{children}</span>;
-}
-
-function Clock() {
-  const [t, setT] = useState("--:--:--");
-  useEffect(() => {
-    const f = () => setT(new Date().toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-    f();
-    const id = window.setInterval(f, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  return <span className="tabular-nums">{t}</span>;
-}
-
-/* ------------------------------------------------------------------ HERO */
-function Hero({ hero }: { hero: Img }) {
+/* ------------------------------------------------------------------ SUMARIO */
+function Contents() {
   const ref = useRef<HTMLElement>(null);
-  const pct = useRef<HTMLSpanElement>(null);
+  const items = [
+    ["portafolio", "Reportajes", "Moda, belleza, lifestyle y momlife", "04"],
+    ["proceso", "Método", "Del brief a la publicación", "12"],
+    ["sobre-mi", "Entrevista", "Quién está detrás de la cámara", "18"],
+    ["faq", "Consultorio", "Derechos, envíos y tarifas", "22"],
+    ["contacto", "Contraportada", "Escríbeme", "24"],
+  ];
   useMotion(ref, (root) => {
-    const big = root.querySelectorAll("[data-big]");
-    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-    tl.from(root.querySelector("[data-card]"), { clipPath: "inset(50% 0% 50% 0% round 52px)", duration: 1.1, ease: "power4.inOut" })
-      .from(root.querySelectorAll("[data-gl]"), { scaleY: 0, duration: 0.9, stagger: 0.03, transformOrigin: "top" }, 0.5)
-      .from(big, { fontStretch: "125%", opacity: 0, yPercent: 30, duration: 1.3, stagger: 0.12 }, 0.6)
-      .from(root.querySelector("[data-fig]"), { clipPath: "inset(100% 0% 0% 0%)", duration: 1.4, ease: "power4.inOut" }, 0.8)
-      .from(root.querySelectorAll("[data-meta]"), { opacity: 0, duration: 0.01, stagger: 0.08 }, 1.2);
-    root.querySelectorAll<HTMLElement>("[data-meta] [data-s]").forEach((el, i) => {
-      tl.to(el, { duration: 0.9, scrambleText: { text: el.textContent ?? "", chars: "01#/", speed: 0.7 } }, 1.2 + i * 0.08);
-    });
-    gsap.to(big[0], { xPercent: -12, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: true } });
-    gsap.to(big[1], { xPercent: 12, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: true } });
+    gsap.from(root.querySelectorAll("[data-row]"), { opacity: 0, y: -16, duration: 1, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: root, start: "top 75%", once: true } });
   });
-  useEffect(() => {
-    const on = () => {
-      const max = document.documentElement.scrollHeight - innerHeight;
-      if (pct.current) pct.current.textContent = String(Math.round((scrollY / Math.max(max, 1)) * 100)).padStart(3, "0");
-    };
-    on();
-    addEventListener("scroll", on, { passive: true });
-    return () => removeEventListener("scroll", on);
-  }, []);
-
   return (
-    <section ref={ref} id="top" className="p-3 sm:p-4 lg:p-5">
-      <div data-card className="b-card relative h-[calc(100svh-24px)] min-h-[560px] overflow-hidden rounded-[28px] sm:h-[calc(100svh-32px)] sm:rounded-[40px] lg:h-[calc(100svh-40px)] lg:rounded-[52px]">
-        {/* the grid */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 grid grid-cols-4 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i} data-gl className={`border-l border-ink/10 last:border-r ${i > 3 ? "hidden lg:block" : ""}`} />
+    <section ref={ref} aria-labelledby="sum-title" className="mx-auto max-w-[1200px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
+      <div className="grid gap-10 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <p className={kicker}>En este número</p>
+          <h2 id="sum-title" className="mt-5 font-display text-[clamp(56px,7vw,110px)] leading-[0.92] tracking-[-0.02em]">Sumario</h2>
+          <p className="mt-6 max-w-[20rem] text-[16px] leading-relaxed text-ink-soft">Contenido que se siente real, para marcas que quieren conectar sin parecer publicidad.</p>
+        </div>
+        <ol className="lg:col-span-8">
+          {items.map(([id, t, d, n]) => (
+            <li key={id} data-row>
+              <a href={`#${id}`} className="group flex items-baseline gap-5 border-b border-ink/15 py-6">
+                <span className="font-display text-[22px] italic text-oxblood">{n}</span>
+                <span className="font-display text-[clamp(30px,3.4vw,48px)] leading-none transition-transform duration-500 group-hover:translate-x-2 group-hover:italic">{t}</span>
+                <span className="e-leader hidden flex-1 sm:block" aria-hidden />
+                <span className="ml-auto text-right text-[14px] text-ink-soft sm:ml-0">{d}</span>
+              </a>
+            </li>
           ))}
-        </div>
-
-        <h1 className="absolute inset-x-0 top-[12%] z-10 flex flex-col items-center text-center leading-[0.78] sm:top-[10%]">
-          <span className="sr-only">Steff Ramírez, UGC Creator</span>
-          <span aria-hidden data-big className="b-display block text-[29vw] text-ink lg:text-[24vw]">STEFF</span>
-        </h1>
-        <img
-          data-fig
-          src={hero.src}
-          srcSet={hero.srcSet}
-          sizes="(min-width:1024px) 560px, 90vw"
-          width={hero.width}
-          height={hero.height}
-          alt="Steff Ramírez, creadora de contenido UGC"
-          fetchPriority="high"
-          className="absolute bottom-0 left-1/2 z-20 h-[78%] w-auto max-w-none -translate-x-1/2"
-        />
-        <p aria-hidden className="absolute inset-x-0 bottom-[6%] z-30 text-center leading-[0.8]">
-          <span data-big className="b-display b-outline block text-[17vw] lg:text-[13vw]">RAMÍREZ</span>
-        </p>
-
-        {/* corners */}
-        <div className="absolute inset-x-0 top-0 z-40 flex items-start justify-between px-5 pt-5 sm:px-8 sm:pt-7 lg:px-12">
-          <p data-meta className={mono}><span data-s>UGC CREATOR</span><br /><span className="text-ink/55">Nº 001 / 2026</span></p>
-          <nav aria-label="Principal" className={`${mono} hidden gap-6 md:flex`}>
-            {[["trabajo", "Trabajo"], ["servicios", "Servicios"], ["proceso", "Proceso"], ["contacto", "Contacto"]].map(([id, n]) => (
-              <a key={id} href={`#${id}`} className="b-hl">[{n}]</a>
-            ))}
-          </nav>
-          <p data-meta className={`${mono} text-right`}><span data-s>HORA LOCAL</span><br /><Clock /></p>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 z-40 flex items-end justify-between px-5 pb-5 sm:px-8 sm:pb-7 lg:px-12">
-          <p data-meta className={`${mono} max-w-[10rem]`}><span data-s>MODA / BELLEZA</span><br /><span data-s>LIFESTYLE / MOMLIFE</span></p>
-          <p data-meta className={`${mono} text-right`}>SCROLL ↓<br /><span ref={pct} className="tabular-nums">000</span>%</p>
-        </div>
+        </ol>
       </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ TICKER */
-function Ticker() {
-  const words = ["DISPONIBLE PARA COLABORACIONES", "UGC", "MODA", "BELLEZA", "LIFESTYLE", "MOMLIFE", "9:16"];
-  const row = (k: string) => (
-    <div className="b-tick flex shrink-0 items-center" aria-hidden={k === "b" || undefined} key={k}>
-      {words.map((w) => (
-        <span key={w} className="flex items-center">
-          <span className="b-display px-6 text-[clamp(40px,6vw,88px)] leading-none">{w}</span>
-          <span className="text-[clamp(24px,3vw,40px)] text-[#e6b3a6]">✺</span>
-        </span>
-      ))}
-    </div>
-  );
-  return (
-    <div className="-rotate-2 overflow-hidden bg-oxblood py-4 text-cream sm:py-5">
-      <div className="flex w-max">{row("a")}{row("b")}</div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ WORK with filter (Flip) */
-function Work({ portrait }: { portrait: Img }) {
+/* ------------------------------------------------------------------ REPORTAJES: spreads with page turn */
+function Spreads({ portrait }: { portrait: Img }) {
   const ref = useRef<HTMLElement>(null);
-  const grid = useRef<HTMLUListElement>(null);
-  const reduced = useReduced();
-  const [filter, setFilter] = useState<string>("todo");
-  const all = services.flatMap((s) => portfolio[s.id].map((item) => ({ s, item })));
-  const flipState = useRef<Flip.FlipState | null>(null);
-
-  const choose = (f: string) => {
-    if (f === filter) return;
-    if (grid.current && !reduced) flipState.current = Flip.getState(grid.current.querySelectorAll("[data-card]"));
-    setFilter(f);
-  };
-  useEffect(() => {
-    if (!flipState.current) return;
-    Flip.from(flipState.current, {
-      duration: 0.7,
-      ease: "power4.inOut",
-      stagger: 0.03,
-      absolute: true,
-      onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power4.out" }),
-      onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.85, duration: 0.4 }),
-    });
-    flipState.current = null;
-    ScrollTrigger.refresh();
-  }, [filter]);
-
   useMotion(ref, (root) => {
-    const s = new SplitText(root.querySelector("[data-h]")!, { type: "words,chars" });
-    gsap.from(s.chars, { yPercent: 100, duration: 0.8, ease: "power4.out", stagger: 0.025, scrollTrigger: { trigger: root, start: "top 75%", once: true } });
-    gsap.from(root.querySelectorAll("[data-card]"), { clipPath: "inset(0% 0% 100% 0%)", duration: 0.9, ease: "power4.inOut", stagger: 0.05, scrollTrigger: { trigger: grid.current, start: "top 85%", once: true } });
-    return () => s.revert();
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 1024px)", () => {
+      root.querySelectorAll<HTMLElement>("[data-spread]").forEach((sp) => {
+        gsap.fromTo(sp.querySelector("[data-page]"), { rotateY: (i, el) => ((el as HTMLElement).classList.contains("e-page--r") ? 92 : -92), filter: "brightness(0.8)" }, { rotateY: 0, filter: "brightness(1)", ease: "none", scrollTrigger: { trigger: sp, start: "top 85%", end: "top 25%", scrub: 0.6 } });
+        gsap.fromTo(sp.querySelector("[data-big] img"), { scale: 1.25 }, { scale: 1, ease: "none", scrollTrigger: { trigger: sp, start: "top bottom", end: "bottom top", scrub: 0.6 } });
+      });
+    });
+    mm.add("(max-width: 1023px)", () => {
+      root.querySelectorAll<HTMLElement>("[data-spread]").forEach((sp) => gsap.from(sp.querySelectorAll("[data-big], [data-page]"), { opacity: 0, y: -30, duration: 1.2, ease: "expo.out", stagger: 0.15, scrollTrigger: { trigger: sp, start: "top 80%", once: true } }));
+    });
+    return () => mm.revert();
   });
-
-  const shown = all.filter((a) => filter === "todo" || a.s.id === filter);
   return (
-    <section ref={ref} id="trabajo" aria-labelledby="w-title" className="mx-auto max-w-[1480px] px-5 pb-24 pt-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
-      <div className="grid gap-6 border-b-2 border-ink pb-6 lg:grid-cols-12 lg:items-end">
-        <p className={`${mono} lg:col-span-2`}><Scr>(01) Trabajo</Scr></p>
-        <h2 id="w-title" className="overflow-hidden lg:col-span-7"><span data-h className="b-display block text-[clamp(64px,12vw,200px)] leading-[0.8]">ARCHIVO</span></h2>
-        <p className="max-w-[22rem] text-[15px] leading-snug lg:col-span-3">Doce piezas verticales. Filtra por mundo: el resto se aparta.</p>
+    <section ref={ref} id="portafolio" aria-labelledby="rep-title" className="px-3 pb-[clamp(80px,10vw,160px)] sm:px-4 lg:px-5">
+      <div className="mx-auto max-w-[1200px] px-2 pb-14 text-center sm:px-4">
+        <p className={kicker}>Reportajes · p. 04</p>
+        <h2 id="rep-title" className="mt-5 font-display text-[clamp(52px,8vw,128px)] leading-[0.92] tracking-[-0.02em]">Cuatro <em className="text-oxblood">historias</em></h2>
       </div>
-      <div role="group" aria-label="Filtrar por categoría" className="mt-6 flex flex-wrap gap-2">
-        {[{ id: "todo", name: "Todo" }, ...services].map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            aria-pressed={filter === f.id}
-            onClick={() => choose(f.id)}
-            className={`${mono} cursor-pointer border-2 border-ink px-4 py-2.5 transition-colors ${filter === f.id ? "bg-ink text-cream" : "hover:bg-oxblood hover:text-cream hover:border-oxblood"}`}
-          >
-            {f.name} <span className="opacity-60">{f.id === "todo" ? all.length : portfolio[f.id as keyof typeof portfolio].length}</span>
-          </button>
-        ))}
-      </div>
-      <ul ref={grid} className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {shown.map(({ s, item }) => {
-          const n = all.findIndex((a) => a.item === item) + 1;
+      <div className="space-y-[clamp(40px,6vw,96px)]">
+        {services.map((s, i) => {
+          const items = portfolio[s.id];
+          const lead = items[0];
           return (
-            <li key={item.brand} data-card data-flip-id={item.brand} className="group relative">
-              <div className="relative aspect-[9/16] overflow-hidden">
-                <Shot img={portrait} item={item} sizes="(min-width:1024px) 25vw, 50vw" />
-                <span className={`${mono} absolute left-2 top-2 bg-cream px-1.5 py-0.5 text-ink`}>{String(n).padStart(2, "0")}</span>
-                <div className="absolute inset-0 flex flex-col justify-end bg-ink/0 p-3 text-cream transition-colors duration-300 group-hover:bg-ink/55">
-                  <p className="b-display translate-y-3 text-[clamp(22px,2.4vw,34px)] leading-[0.9] opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">“{item.hook}”</p>
+            <article key={s.id} id={s.id} data-spread aria-labelledby={`sp-${s.id}`} className="mx-auto grid max-w-[1440px] scroll-mt-20 overflow-hidden rounded-[28px] bg-[#f8f3ea] shadow-[0_40px_80px_-60px_rgba(42,27,22,0.6)] [perspective:2200px] sm:rounded-[40px] lg:min-h-[86svh] lg:grid-cols-2 lg:rounded-[52px]">
+              <div data-big className={`relative min-h-[60svh] overflow-hidden ${i % 2 ? "lg:order-2" : ""}`}>
+                <Shot img={portrait} item={lead} sizes="(min-width:1024px) 50vw, 100vw" className="absolute inset-0" />
+                <p className="absolute bottom-6 left-6 rounded-full bg-cream/90 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] backdrop-blur">para {lead.brand} · {lead.format}</p>
+              </div>
+              <div data-page className={`e-page relative flex flex-col justify-between gap-10 bg-[#f8f3ea] p-7 sm:p-12 lg:p-16 ${i % 2 ? "e-page--r lg:order-1" : ""}`}>
+                <div className="flex items-baseline justify-between">
+                  <p className={kicker}>Reportaje · {s.name}</p>
+                  <p className="font-display text-[18px] italic text-ink-soft">p. {String(4 + i * 2).padStart(2, "0")}</p>
                 </div>
+                <div>
+                  <h3 id={`sp-${s.id}`} className="font-display text-[clamp(56px,6.6vw,110px)] leading-[0.9] tracking-[-0.02em]">{i % 2 ? <em>{s.name}</em> : s.name}</h3>
+                  <blockquote className="mt-8 border-l-2 border-oxblood pl-6 font-display text-[clamp(24px,2.4vw,34px)] italic leading-[1.2] text-oxblood">“{lead.hook}”</blockquote>
+                  <p className="mt-6 max-w-[28rem] text-[16px] leading-relaxed text-ink-soft">{s.desc}. Tres piezas grabadas en casa, con luz natural y el tono de una amiga que te lo recomienda.</p>
+                </div>
+                <ul className="grid grid-cols-3 gap-3">
+                  {items.map((it) => (
+                    <li key={it.brand}>
+                      <div className="relative aspect-[9/16] overflow-hidden rounded-[14px]">
+                        <Shot img={portrait} item={it} sizes="160px" className="absolute inset-0 transition-transform duration-700 hover:scale-105" />
+                      </div>
+                      <p className="mt-2 font-display text-[16px] leading-tight">{it.brand}</p>
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-ink-soft">{it.format} · {it.duration}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className={`${mono} mt-2 flex justify-between gap-2 border-t-2 border-ink pt-2`}>
-                <span className="truncate font-semibold">{item.brand}</span>
-                <span className="shrink-0 text-ink/60">{s.name} · {item.duration}</span>
-              </div>
-            </li>
+            </article>
           );
         })}
-      </ul>
+      </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ SERVICES blocks */
-function Services() {
+/* ------------------------------------------------------------------ MÉTODO: magazine columns */
+function Method() {
   const ref = useRef<HTMLElement>(null);
-  const looks = ["bg-ink text-cream", "bg-oxblood text-cream", "bg-sand text-ink", "bg-cream text-ink"];
   useMotion(ref, (root) => {
-    gsap.from(root.querySelectorAll("[data-blk]"), { clipPath: "inset(0% 100% 0% 0%)", duration: 1, ease: "power4.inOut", stagger: 0.1, scrollTrigger: { trigger: root, start: "top 75%", once: true } });
+    gsap.from(root.querySelectorAll("[data-rule]"), { scaleY: 0, transformOrigin: "top", duration: 1.4, ease: "expo.inOut", stagger: 0.1, scrollTrigger: { trigger: root, start: "top 70%", once: true } });
+    gsap.from(root.querySelectorAll("[data-col]"), { opacity: 0, y: -20, duration: 1.2, ease: "expo.out", stagger: 0.12, delay: 0.3, scrollTrigger: { trigger: root, start: "top 70%", once: true } });
   });
   return (
-    <section ref={ref} id="servicios" aria-labelledby="s-title" className="mx-auto max-w-[1480px] px-5 py-24 sm:px-8 lg:px-12">
-      <div className="flex items-end justify-between border-b-2 border-ink pb-6">
-        <h2 id="s-title" className="b-display text-[clamp(48px,7vw,110px)] leading-[0.85]">LO QUE HAGO</h2>
-        <p className={mono}><Scr>(02) Servicios</Scr></p>
-      </div>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4">
-        {services.map((s, i) => (
-          <li key={s.id} data-blk className={`group relative flex min-h-[280px] flex-col justify-between overflow-hidden p-6 sm:min-h-[360px] sm:p-8 ${looks[i]}`}>
-            <div className={`${mono} flex justify-between`}><span>{s.n}/04</span><span>{portfolio[s.id].length} piezas</span></div>
-            <div>
-              <h3 className="b-display text-[clamp(64px,10vw,170px)] leading-[0.8] transition-[font-stretch] duration-500 group-hover:[font-stretch:110%]">{s.name.toUpperCase()}</h3>
-              <p className="mt-4 text-[16px] opacity-80">{s.desc}</p>
+    <section ref={ref} id="proceso" aria-labelledby="m-title" className="mx-auto max-w-[1200px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
+      <p className={kicker}>Método · p. 12</p>
+      <h2 id="m-title" className="mt-5 max-w-[14ch] font-display text-[clamp(52px,7vw,116px)] leading-[0.92] tracking-[-0.02em]">Del brief <em className="text-oxblood">a tu feed</em></h2>
+      <ol className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map((s, i) => (
+          <li key={s.n} className="relative py-6 sm:px-6 lg:first:pl-0">
+            {i > 0 && <span data-rule aria-hidden className="absolute bottom-0 left-0 top-0 hidden w-px bg-ink/20 sm:block" />}
+            <div data-col>
+              <p className="font-display text-[88px] italic leading-[0.8] text-oxblood">{s.n}</p>
+              <h3 className="mt-6 font-display text-[34px] leading-none">{s.title}</h3>
+              <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">{s.text}</p>
             </div>
           </li>
         ))}
-      </ul>
-      <div className="mt-16 grid gap-x-10 sm:grid-cols-2">
-        {formats.map((f, i) => (
-          <p key={f.name} className="flex items-baseline gap-4 border-b border-ink/25 py-3">
-            <span className={`${mono} text-ink/55`}>{String(i + 1).padStart(2, "0")}</span>
-            <span className="b-display text-[28px] leading-none">{f.name.toUpperCase()}</span>
-            <span className="ml-auto text-right text-[13px] text-ink/70">{f.note}</span>
-          </p>
-        ))}
+      </ol>
+      <div className="mt-20 rounded-[28px] bg-[#f8f3ea] p-7 sm:p-10">
+        <p className={kicker}>Formatos</p>
+        <ul className="mt-6 grid gap-x-10 sm:grid-cols-2">
+          {formats.map((f) => (
+            <li key={f.name} className="flex items-baseline justify-between gap-6 border-b border-ink/10 py-3.5">
+              <span className="font-display text-[22px]">{f.name}</span>
+              <span className="text-right text-[13px] text-ink-soft">{f.note}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ PROCESS */
-function Process() {
+/* ------------------------------------------------------------------ AGRADECIMIENTOS */
+function Thanks() {
   const ref = useRef<HTMLElement>(null);
   useMotion(ref, (root) => {
-    gsap.fromTo(root.querySelector("[data-bar]"), { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: root.querySelector("[data-steps]"), start: "top 85%", end: "bottom 50%", scrub: true } });
-    root.querySelectorAll<HTMLElement>("[data-num]").forEach((el) => {
-      gsap.from(el, { textContent: 0, duration: 1.2, ease: "power2.out", snap: { textContent: 1 }, scrollTrigger: { trigger: el, start: "top 90%", once: true }, onUpdate() { el.textContent = String(Math.round(Number(el.textContent))).padStart(2, "0"); } });
-    });
+    const s = new SplitText(root.querySelector("[data-txt]")!, { type: "words" });
+    gsap.fromTo(s.words, { opacity: 0.15 }, { opacity: 1, ease: "none", stagger: 0.1, scrollTrigger: { trigger: root, start: "top 75%", end: "bottom 60%", scrub: 0.5 } });
+    return () => s.revert();
   });
   return (
-    <section ref={ref} id="proceso" aria-labelledby="p-title" className="bg-ink py-[clamp(100px,12vw,180px)] text-cream">
-      <div className="mx-auto max-w-[1480px] px-5 sm:px-8 lg:px-12">
-        <div className="flex items-end justify-between border-b-2 border-cream pb-6">
-          <h2 id="p-title" className="b-display text-[clamp(48px,7vw,110px)] leading-[0.85]">PROCESO</h2>
-          <p className={mono}><Scr>(03) 4 pasos</Scr></p>
-        </div>
-        <div data-steps className="relative mt-10">
-          <span data-bar aria-hidden className="absolute left-0 right-0 top-0 h-[3px] origin-left bg-[#e6b3a6]" />
-          <ol className="grid border-l border-cream/20 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, i) => (
-              <li key={s.n} className="border-b border-r border-cream/20 p-6 pt-10 sm:p-8 sm:pt-12">
-                <span aria-hidden data-num className="b-display block text-[clamp(90px,10vw,160px)] leading-[0.8] text-[#e6b3a6]">{String(i + 1).padStart(2, "0")}</span>
-                <h3 className="b-display mt-8 text-[40px] leading-none">{s.title.toUpperCase()}</h3>
-                <p className="mt-4 text-[15px] leading-relaxed text-cream/75">{s.text}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
+    <section ref={ref} aria-labelledby="t-title" className="bg-ink py-[clamp(110px,14vw,200px)] text-cream">
+      <div className="mx-auto max-w-[1100px] px-5 text-center sm:px-8">
+        <h2 id="t-title" className="text-[11px] font-medium uppercase tracking-[0.28em] text-cream/55">Agradecimientos</h2>
+        <p data-txt className="mt-10 font-display text-[clamp(32px,4.6vw,68px)] leading-[1.2]">
+          Este número no existiría sin {brands.slice(0, -1).join(", ")} y {brands[brands.length - 1]}.
+        </p>
       </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ CLIENTS */
-function Clients() {
-  return (
-    <section aria-labelledby="c-title" className="mx-auto max-w-[1480px] px-5 py-[clamp(100px,12vw,180px)] sm:px-8 lg:px-12">
-      <div className="flex items-end justify-between border-b-2 border-ink pb-6">
-        <h2 id="c-title" className="b-display text-[clamp(48px,7vw,110px)] leading-[0.85]">MARCAS</h2>
-        <p className={mono}><Scr>(04) Han confiado</Scr></p>
-      </div>
-      <ul className="columns-1 gap-10 sm:columns-2">
-        {brands.map((b, i) => (
-          <li key={b} className="b-row group relative flex break-inside-avoid items-baseline justify-between border-b border-ink/25 py-3">
-            <span className="b-display relative z-10 text-[clamp(40px,5vw,72px)] leading-none transition-colors duration-300 group-hover:text-cream">{b.toUpperCase()}</span>
-            <span className={`${mono} relative z-10 transition-colors group-hover:text-cream`}>{String(i + 1).padStart(2, "0")}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ ABOUT */
-function About({ portrait }: { portrait: Img }) {
+/* ------------------------------------------------------------------ ENTREVISTA */
+function Interview({ portrait }: { portrait: Img }) {
   const ref = useRef<HTMLElement>(null);
   useMotion(ref, (root) => {
-    gsap.from(root.querySelector("[data-ph]"), { clipPath: "inset(0% 0% 100% 0%)", duration: 1.3, ease: "power4.inOut", scrollTrigger: { trigger: root, start: "top 70%", once: true } });
-    gsap.fromTo(root.querySelector("[data-ph] img"), { yPercent: -8 }, { yPercent: 8, ease: "none", scrollTrigger: { trigger: root, start: "top bottom", end: "bottom top", scrub: true } });
+    gsap.fromTo(root.querySelector("[data-ph]"), { clipPath: "inset(10% 10% 10% 10% round 999px 999px 0px 0px)" }, { clipPath: "inset(0% 0% 0% 0% round 999px 999px 0px 0px)", ease: "none", scrollTrigger: { trigger: root.querySelector("[data-ph]"), start: "top 90%", end: "center 55%", scrub: 0.6 } });
+    gsap.from(root.querySelectorAll("[data-qa]"), { opacity: 0, y: -16, duration: 1.1, ease: "expo.out", stagger: 0.12, scrollTrigger: { trigger: root, start: "top 65%", once: true } });
   });
+  const qa = [
+    ["¿Quién eres?", "Soy Steff, creadora de contenido UGC. Grabo moda, belleza, lifestyle y el día a día de una mamá real."],
+    ["¿Qué hace diferente tu contenido?", "Que se siente como la recomendación de una amiga, no como un anuncio. Esa confianza es lo que hace que la gente pare el scroll."],
+    ["¿Cómo grabas?", "En casa, con luz natural, con cuidado y mucha cercanía. Formato vertical 9:16 y subtítulos incluidos."],
+  ];
   return (
-    <section ref={ref} aria-labelledby="a-title" className="border-y-2 border-ink">
-      <div className="mx-auto grid max-w-[1480px] lg:grid-cols-2">
-        <div data-ph className="relative aspect-square overflow-hidden bg-oxblood lg:aspect-auto">
-          <img src={portrait.src} srcSet={portrait.srcSet} sizes="(min-width:1024px) 50vw, 100vw" alt="Retrato de Steff Ramírez" loading="lazy" className="absolute inset-0 h-[116%] w-full object-cover object-top mix-blend-multiply grayscale contrast-125" />
+    <section ref={ref} id="sobre-mi" aria-labelledby="i-title" className="mx-auto max-w-[1200px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
+      <div className="grid items-start gap-14 lg:grid-cols-12">
+        <div className="lg:sticky lg:top-24 lg:col-span-5">
+          <div data-ph className="relative mx-auto aspect-[3/4] max-w-[440px] overflow-hidden rounded-t-full" style={{ background: "#d6c3a9" }}>
+            <img src={portrait.src} srcSet={portrait.srcSet} sizes="460px" alt="Retrato de Steff Ramírez" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top mix-blend-multiply" />
+          </div>
         </div>
-        <div className="flex flex-col justify-between gap-12 p-6 sm:p-10 lg:p-14">
-          <p className={mono}><Scr>(05) Sobre mí</Scr></p>
-          <h2 id="a-title" className="b-display text-[clamp(56px,7vw,120px)] leading-[0.82]">HOLA, SOY <span className="text-oxblood">STEFF.</span></h2>
-          <p className="max-w-[34rem] text-[clamp(18px,1.6vw,22px)] leading-snug">Creo contenido que se siente como la recomendación de una amiga, no como un anuncio. Moda, belleza y el día a día de una mamá real, grabado con cuidado y mucha cercanía.</p>
-          <dl className={`${mono} grid grid-cols-3 border-t-2 border-ink`}>
-            {[["Idioma", "Español"], ["Luz", "Natural"], ["Formato", "9:16"]].map(([k, v]) => (
-              <div key={k} className="border-r border-ink/25 pt-3 pr-3 last:border-0"><dt className="text-ink/55">{k}</dt><dd className="mt-1 text-[14px] font-semibold">{v}</dd></div>
+        <div className="lg:col-span-7">
+          <p className={kicker}>Entrevista · p. 18</p>
+          <h2 id="i-title" className="mt-5 font-display text-[clamp(48px,6vw,96px)] leading-[0.95] tracking-[-0.02em]">“Grabo como <em className="text-oxblood">le hablo a una amiga.</em>”</h2>
+          <dl className="mt-12 space-y-10">
+            {qa.map(([q, a]) => (
+              <div key={q} data-qa>
+                <dt className="font-display text-[24px] italic text-oxblood">{q}</dt>
+                <dd className="mt-3 text-[18px] leading-relaxed text-ink">{a}</dd>
+              </div>
             ))}
           </dl>
         </div>
@@ -337,78 +261,78 @@ function About({ portrait }: { portrait: Img }) {
   );
 }
 
-/* ------------------------------------------------------------------ FAQ */
-function Faq() {
-  const [open, setOpen] = useState<number | null>(null);
+/* ------------------------------------------------------------------ CONSULTORIO */
+function Advice() {
+  const [open, setOpen] = useState<number | null>(0);
   return (
-    <section aria-labelledby="f-title" className="mx-auto max-w-[1480px] px-5 py-[clamp(100px,12vw,180px)] sm:px-8 lg:px-12">
-      <div className="flex items-end justify-between border-b-2 border-ink pb-6">
-        <h2 id="f-title" className="b-display text-[clamp(48px,7vw,110px)] leading-[0.85]">FAQ</h2>
-        <p className={mono}><Scr>(06) Dudas</Scr></p>
+    <section id="faq" aria-labelledby="f-title" className="bg-[#ece3d5] py-[clamp(110px,14vw,200px)]">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12">
+        <p className={kicker}>Consultorio · p. 22</p>
+        <h2 id="f-title" className="mt-5 font-display text-[clamp(52px,6.4vw,104px)] leading-[0.92] tracking-[-0.02em]">Lo que <em className="text-oxblood">me preguntan</em></h2>
+        <ul className="mt-14 grid gap-x-12 lg:grid-cols-2">
+          {faqs.map((f, i) => (
+            <li key={f.q} className="border-t border-ink/20">
+              <h3>
+                <button type="button" aria-expanded={open === i} aria-controls={`eq${i}`} onClick={() => setOpen(open === i ? null : i)} className="group flex w-full cursor-pointer items-start gap-4 py-6 text-left">
+                  <span className="pt-1 font-display text-[15px] italic text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
+                  <span className={`flex-1 font-display text-[clamp(22px,2vw,28px)] leading-tight transition-colors ${open === i ? "italic text-oxblood" : "group-hover:text-oxblood"}`}>{f.q}</span>
+                  <span aria-hidden className={`mt-1 text-[22px] transition-transform duration-500 ${open === i ? "rotate-45 text-oxblood" : ""}`}>+</span>
+                </button>
+              </h3>
+              <div id={`eq${i}`} role="region" className="faq-panel" data-open={open === i} inert={open !== i}>
+                <div><p className="pb-7 pl-9 text-[16px] leading-relaxed text-ink-soft">{f.a}</p></div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-      {faqs.map((f, i) => (
-        <div key={f.q} className="border-b-2 border-ink">
-          <h3>
-            <button type="button" aria-expanded={open === i} aria-controls={`bq${i}`} onClick={() => setOpen(open === i ? null : i)} className={`flex w-full cursor-pointer items-center gap-4 py-5 text-left transition-colors ${open === i ? "bg-ink px-4 text-cream" : "hover:bg-sand"}`}>
-              <span className={`${mono} w-10 shrink-0`}>Q{String(i + 1).padStart(2, "0")}</span>
-              <span className="b-display flex-1 text-[clamp(24px,2.8vw,40px)] leading-[0.95]">{f.q.toUpperCase()}</span>
-              <span aria-hidden className="b-display text-[36px] leading-none">{open === i ? "−" : "+"}</span>
-            </button>
-          </h3>
-          <div id={`bq${i}`} hidden={open !== i} className="py-6 pl-14 pr-4">
-            <p className="max-w-[44rem] text-[17px] leading-relaxed">{f.a}</p>
-          </div>
-        </div>
-      ))}
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ CONTACT */
-function Contact() {
+/* ------------------------------------------------------------------ CONTRAPORTADA */
+function Back({ onContact }: { onContact: () => void }) {
   const ref = useRef<HTMLElement>(null);
   const { copy, done } = useCopy(EMAIL);
   useMotion(ref, (root) => {
-    const s = new SplitText(root.querySelector("[data-mail]")!, { type: "words,chars" });
-    gsap.from(s.chars, { yPercent: -120, duration: 0.7, ease: "power4.out", stagger: 0.02, scrollTrigger: { trigger: root, start: "top 70%", once: true } });
+    const s = new SplitText(root.querySelector("[data-big]")!, { type: "words,chars" });
+    gsap.from(s.chars, { yPercent: -60, opacity: 0, filter: "blur(8px)", duration: 1.2, ease: "expo.out", stagger: 0.04, scrollTrigger: { trigger: root, start: "top 70%", once: true } });
     return () => s.revert();
   });
-  const [user, domain] = EMAIL.split("@");
   return (
-    <section ref={ref} id="contacto" aria-labelledby="ct-title" className="p-3 sm:p-4 lg:p-5">
-      <div className="b-card relative overflow-hidden rounded-[28px] px-5 pb-8 pt-16 sm:rounded-[40px] sm:px-8 lg:rounded-[52px] lg:px-12">
-        <div className="flex items-end justify-between border-b-2 border-ink pb-6">
-          <h2 id="ct-title" className="b-display text-[clamp(48px,7vw,110px)] leading-[0.85]">¿HABLAMOS?</h2>
-          <p className={mono}><Scr>(07) Contacto</Scr></p>
-        </div>
-        <a href={`mailto:${EMAIL}`} className="group mt-10 block overflow-hidden text-center">
-          <span data-mail className="b-display block text-[clamp(28px,8.6vw,190px)] leading-[0.85] transition-colors group-hover:text-oxblood">{user.toUpperCase()}@<br className="sm:hidden" />{domain.toUpperCase()}</span>
-        </a>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <button type="button" onClick={copy} className={`${mono} cursor-pointer border-2 border-ink bg-ink px-5 py-3 text-cream transition-colors hover:border-oxblood hover:bg-oxblood`}>{done ? "Copiado ✓" : "Copiar correo"}</button>
-          {socials.map((s) => (
-            <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className={`${mono} border-2 border-ink px-5 py-3 transition-colors hover:bg-ink hover:text-cream`}>{s.label} ↗<span className="sr-only"> (se abre en una pestaña nueva)</span></a>
-          ))}
-        </div>
-        <div className={`${mono} mt-20 flex justify-between border-t-2 border-ink pt-4`}><span>© 2026 STEFF RAMÍREZ</span><span>HORA LOCAL <Clock /></span></div>
+    <section ref={ref} id="contacto" aria-labelledby="b-title" className="v2-frame">
+      <div className="grain v2-radius relative flex min-h-[88svh] flex-col items-center justify-center overflow-hidden px-5 py-24 text-center" style={{ background: "linear-gradient(165deg,#dccab2 0%,#d3bfa5 48%,#c7af93 100%)" }}>
+        <p className={kicker}>Contraportada · p. 24</p>
+        <h2 id="b-title" className="mt-6"><span data-big className="block font-display text-[clamp(64px,12vw,200px)] leading-[0.9] tracking-[-0.02em]">Tu marca, <em className="text-oxblood">aquí.</em></span></h2>
+        <p className="mt-8 max-w-[28rem] text-[17px] leading-relaxed text-ink-soft">Cuéntame qué quieres contar y te respondo con ideas, no con plantillas.</p>
+        <button type="button" onClick={onContact} className="group mt-10 inline-flex h-14 cursor-pointer items-center gap-5 rounded-full bg-ink pl-7 pr-2 text-[12px] font-medium uppercase tracking-[0.22em] text-cream transition-colors hover:bg-oxblood">
+          Escríbeme<span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-ink transition-transform duration-500 group-hover:rotate-45">↗</span>
+        </button>
+        <p className="mt-6 text-[14px] text-ink-soft"><a href={`mailto:${EMAIL}`} className="underline decoration-ink/30 underline-offset-4 hover:decoration-ink">{EMAIL}</a> · <button type="button" onClick={copy} className="cursor-pointer underline decoration-ink/30 underline-offset-4 hover:decoration-ink">{done ? "copiado" : "copiar"}</button></p>
+        <ul className="mt-10 flex gap-6 text-[11px] font-medium uppercase tracking-[0.24em]">
+          {socials.map((s) => <li key={s.label}><a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-oxblood">{s.label} ↗<span className="sr-only"> (se abre en una pestaña nueva)</span></a></li>)}
+        </ul>
+        <p className="absolute bottom-6 text-[12px] text-ink-soft">© 2026 Steff Ramírez · UGC Creator</p>
       </div>
     </section>
   );
 }
 
 export default function App({ hero, portrait }: P) {
-  useLenis({ lerp: 0.14 });
   return (
-    <main className="overflow-x-clip">
-      <Hero hero={hero} />
-      <div className="py-16"><Ticker /></div>
-      <Work portrait={portrait} />
-      <Services />
-      <Process />
-      <Clients />
-      <About portrait={portrait} />
-      <Faq />
-      <Contact />
-    </main>
+    <Shell>
+      {({ openMenu, openContact }) => (
+        <>
+          <Cover hero={hero} onMenu={openMenu} onContact={openContact} />
+          <Contents />
+          <Spreads portrait={portrait} />
+          <Method />
+          <Thanks />
+          <Interview portrait={portrait} />
+          <Advice />
+          <Back onContact={openContact} />
+        </>
+      )}
+    </Shell>
   );
 }
