@@ -1,0 +1,16 @@
+---
+import Base from "../variants/Base.astro";
+import App from "../variants/v7/App";
+import { loadImages } from "../variants/images";
+import "../v2/v2.css";
+import "../variants/v7/v7.css";
+const { hero, portrait } = await loadImages();
+---
+
+<Base
+  title="Steff Ramírez · Cinética"
+  theme="#f4eee3"
+  fonts="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Instrument+Sans:wght@400;500;600&display=swap"
+>
+  <App hero={hero} portrait={portrait} client:load />
+</Base>
