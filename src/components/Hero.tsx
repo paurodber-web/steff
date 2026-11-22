@@ -83,7 +83,7 @@ export default function Hero() {
           {/* model */}
           <div className="anim-girl pointer-events-none absolute inset-0 z-20 flex items-end justify-center">
             <img
-              src="/steff.png"
+              src={`${import.meta.env.BASE_URL}steff.png`}
               alt="Steff Ramírez, UGC creator"
               width={701}
               height={926}
