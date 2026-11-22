@@ -1,37 +1,19 @@
-@import "tailwindcss";
-
-@theme {
-  --font-display: "Cormorant", "Cormorant Garamond", Georgia, serif;
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --color-cream: #f4eee3;
-  --color-paper: #efe8dc;
-  --color-paper-2: #e8dfd0;
-  --color-sand: #d6c3a9;
-  --color-ink: #2a1b16;
-  --color-ink-soft: #5b4a3f;
-  --color-oxblood: #5c1a1f;
+/* Atelier — builds on the homepage stylesheet (v2.css) */
+.a-ring {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 8%;
+  width: min(92%, 760px);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 139, 98, 0.35);
+  pointer-events: none;
 }
-
-html { background: var(--color-paper); -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0;
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-::selection { background: var(--color-oxblood); color: var(--color-cream); }
-:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 4px; }
-
 .a-card {
   background: linear-gradient(165deg, #dccab2 0%, #d3bfa5 48%, #c7af93 100%);
   isolation: isolate;
-}
-.a-hero-title {
-  font-size: clamp(130px, 33vw, 560px);
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
 }
 .a-eyebrow {
   font-size: 11px;
@@ -71,10 +53,9 @@ body {
 .a-dropcap::first-letter {
   float: left;
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: 5.4em;
-  line-height: 0.8;
-  padding: 0.06em 0.12em 0 0;
+  font-size: 4.6em;
+  line-height: 0.82;
+  padding: 0.04em 0.1em 0 0;
   color: var(--color-oxblood);
 }
 .a-faq summary::-webkit-details-marker { display: none; }
