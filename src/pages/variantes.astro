@@ -2,10 +2,11 @@
 import Base from "../variants/Base.astro";
 const base = import.meta.env.BASE_URL;
 const items = [
-  { n: "01", href: "variante-1/", name: "Atelier", note: "Lujo silencioso. Cormorant + Manrope. Pasarela horizontal, índice con vista previa al cursor, ritmo lento.", bg: "#efe8dc", fg: "#2a1b16" },
-  { n: "02", href: "variante-2/", name: "Estudio", note: "Gráfico y suizo. Archivo Condensed + JetBrains Mono. Cuadrícula visible, filtros animados, bloques de color.", bg: "#1f1411", fg: "#f4eee3" },
-  { n: "03", href: "variante-3/", name: "Diario", note: "Scrapbook táctil. Fraunces + DM Sans + Caveat. Pegatinas y polaroids arrastrables, trazos a mano.", bg: "#ecd2c6", fg: "#2a1b16" },
-  { n: "04", href: "variante-4/", name: "Cine", note: "Oscuro e inmersivo. Instrument Serif + Inter. Foco de luz, planos que se apilan, tira de película, créditos.", bg: "#5c1a1f", fg: "#f4eee3" },
+  { n: "01", href: "variante-1/", name: "Atelier", note: "Lujo silencioso: la tarjeta exhala al bajar, pasarela horizontal de videos e índice con vista previa al cursor.", bg: "#efe8dc", fg: "#2a1b16" },
+  { n: "02", href: "variante-2/", name: "Editorial", note: "Tu portada como cubierta de revista: titulares, sumario, reportajes a doble página que giran como hojas y entrevista.", bg: "#f8f3ea", fg: "#2a1b16" },
+  { n: "03", href: "variante-3/", name: "Luz", note: "Halos de luz que siguen al cursor, cristal esmerilado, textos que pasan de desenfocados a nítidos.", bg: "#ecd2c6", fg: "#2a1b16" },
+  { n: "04", href: "variante-4/", name: "Escena", note: "Apertura de cine, foco de estudio, escenas que se apilan, tira de fotogramas y créditos.", bg: "#5c1a1f", fg: "#f4eee3" },
+  { n: "05", href: "variante-5/", name: "Galería", note: "Exposición: obras enmarcadas con cartela, una pieza que se amplía a pantalla completa, recorrido guiado y entrada.", bg: "#e3d1b8", fg: "#2a1b16" },
 ];
 ---
 
@@ -13,8 +14,8 @@ const items = [
   <main>
     <header>
       <p class="eyebrow">Steff Ramírez — propuestas de diseño</p>
-      <h1>Cuatro <em>variantes</em></h1>
-      <p class="lead">La misma web, cuatro direcciones de arte. La versión actual sigue en <a href={base}>la portada</a>.</p>
+      <h1>Las <em>variantes</em></h1>
+      <p class="lead">Tu portada actual, elevada de distintas formas: misma elegancia, distinta composición y movimiento. La versión actual sigue en <a href={base}>la portada</a>.</p>
     </header>
     <ol>
       {items.map((it) => (
