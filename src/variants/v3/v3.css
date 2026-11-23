@@ -1,61 +1,26 @@
-/* Luz — builds on the homepage stylesheet (v2.css) */
-body { background: transparent; }
-.l-blob {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(90px);
-  opacity: 0.55;
-  will-change: transform;
+/* Editor — builds on the homepage stylesheet (v2.css); headings in Bricolage Grotesque */
+:root { --font-display: "Bricolage Grotesque", "Instrument Sans", sans-serif; --font-mono: "JetBrains Mono", ui-monospace, monospace; }
+.v2-title { font-weight: 700; letter-spacing: -0.05em; font-variation-settings: "opsz" 96; }
+.font-display { font-variation-settings: "opsz" 96; }
+.font-mono { font-family: var(--font-mono); }
+.ed-guides {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background-image:
+    linear-gradient(90deg, transparent calc(33.33% - 0.5px), rgba(255, 255, 255, 0.45) calc(33.33% - 0.5px) calc(33.33% + 0.5px), transparent calc(33.33% + 0.5px) calc(66.66% - 0.5px), rgba(255, 255, 255, 0.45) calc(66.66% - 0.5px) calc(66.66% + 0.5px), transparent calc(66.66% + 0.5px)),
+    linear-gradient(transparent calc(33.33% - 0.5px), rgba(255, 255, 255, 0.45) calc(33.33% - 0.5px) calc(33.33% + 0.5px), transparent calc(33.33% + 0.5px) calc(66.66% - 0.5px), rgba(255, 255, 255, 0.45) calc(66.66% - 0.5px) calc(66.66% + 0.5px), transparent calc(66.66% + 0.5px));
 }
-.l-blob--a { width: 46vw; height: 46vw; left: -10vw; top: 20vh; background: #ecd2c6; animation: l-drift-a 26s ease-in-out infinite alternate; }
-.l-blob--b { width: 40vw; height: 40vw; right: -8vw; top: 55vh; background: #e3cfae; animation: l-drift-b 32s ease-in-out infinite alternate; }
-.l-blob--c { width: 30vw; height: 30vw; left: 35vw; top: 110vh; background: rgba(92, 26, 31, 0.28); animation: l-drift-a 38s ease-in-out infinite alternate-reverse; }
-@keyframes l-drift-a { to { transform: translate(18vw, -12vh) scale(1.15); } }
-@keyframes l-drift-b { to { transform: translate(-16vw, 10vh) scale(0.9); } }
-.l-halo {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 520px;
-  height: 520px;
-  margin: -260px 0 0 -260px;
-  border-radius: 999px;
-  background: radial-gradient(closest-side, rgba(255, 246, 232, 0.75), rgba(255, 246, 232, 0));
+.ed-safe { border: 1px dashed rgba(255, 255, 255, 0.4); border-radius: 12px; }
+.ed-corner { width: 26px; height: 26px; border-left: 2px solid #fff; border-top: 2px solid #fff; border-top-left-radius: 8px; }
+.ed-panel { background: #241713; box-shadow: inset 0 0 0 1px rgba(244, 238, 227, 0.06); }
+.ed-ruler {
+  background-image: repeating-linear-gradient(90deg, rgba(244, 238, 227, 0.35) 0 1px, transparent 1px 2.5%), repeating-linear-gradient(90deg, rgba(244, 238, 227, 0.6) 0 1px, transparent 1px 12.5%);
+  background-size: 100% 6px, 100% 12px;
+  background-repeat: no-repeat;
+  background-position: 0 100%, 0 100%;
 }
-.l-sun {
-  position: absolute;
-  z-index: 0;
-  left: 50%;
-  top: 38%;
-  width: min(80vw, 820px);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 999px;
-  background: radial-gradient(closest-side, rgba(255, 245, 230, 0.95), rgba(255, 238, 220, 0.35) 55%, rgba(255, 238, 220, 0));
-  pointer-events: none;
-}
-.l-glass {
-  background: rgba(250, 245, 237, 0.48);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 20px 50px -30px rgba(42, 27, 22, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
-  backdrop-filter: blur(18px) saturate(1.2);
-}
-.l-morph { border-radius: 58% 42% 46% 54% / 46% 52% 48% 54%; animation: l-morph 14s ease-in-out infinite alternate; }
-@keyframes l-morph {
-  50% { border-radius: 44% 56% 58% 42% / 56% 44% 56% 44%; }
-  100% { border-radius: 52% 48% 40% 60% / 42% 58% 42% 58%; }
-}
-.l-fade { -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); }
-.l-marquee { animation: l-marquee 60s linear infinite; }
-@keyframes l-marquee { to { transform: translateX(-50%); } }
-.l-contact {
-  --gx: 50%;
-  --gy: 40%;
-  background:
-    radial-gradient(circle at var(--gx) var(--gy), rgba(255, 246, 232, 0.8), rgba(255, 246, 232, 0) 38%),
-    linear-gradient(165deg, #dccab2 0%, #d3bfa5 48%, #c7af93 100%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .l-blob, .l-morph, .l-marquee { animation: none; }
-}
+.ed-head::before { content: ""; position: absolute; top: -6px; left: -5px; width: 11px; height: 11px; border-radius: 3px; background: #e9a596; }
+.ed-cut { animation: ed-cut 0.45s ease both; }
+@keyframes ed-cut { from { opacity: 0; transform: scale(1.04); } }
+.ed-swap { animation: ed-swap 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes ed-swap { from { opacity: 0; transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { .ed-cut, .ed-swap { animation: none; } }

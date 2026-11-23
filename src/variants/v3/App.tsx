@@ -1,46 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import { EMAIL, socials, services, portfolio, brands, steps, faqs, formats } from "../../v2/data";
 import type { Img } from "../images";
-import { gsap, SplitText, useMotion, useCopy, useFinePointer } from "../kit";
+import { gsap, ScrollTrigger, useMotion, useCopy, reg } from "../kit";
 import { Shell } from "../Shell";
 import { EleHero, Letters } from "../EleHero";
 import { Shot } from "../parts";
 
 type P = { hero: Img; portrait: Img };
-const kicker = "text-[11px] font-medium uppercase tracking-[0.28em] text-ink-soft";
+const kicker = "text-[11px] font-medium uppercase tracking-[0.24em] text-ink-soft";
+const secs = (d: string) => Number(d.split(":")[0]) * 60 + Number(d.split(":")[1]);
+const tc = (t: number) => `00:${String(Math.floor(t / 60)).padStart(2, "0")}:${String(Math.floor(t % 60)).padStart(2, "0")}:${String(Math.floor((t % 1) * 24)).padStart(2, "0")}`;
 
-/** Slow-drifting light behind the whole page; one halo follows the pointer. */
-function Ambient() {
-  const halo = useRef<HTMLDivElement>(null);
-  const fine = useFinePointer();
-  useEffect(() => {
-    if (!fine || !halo.current) return;
-    const x = gsap.quickTo(halo.current, "x", { duration: 1.6, ease: "power3.out" });
-    const y = gsap.quickTo(halo.current, "y", { duration: 1.6, ease: "power3.out" });
-    const move = (e: PointerEvent) => {
-      x(e.clientX);
-      y(e.clientY);
-    };
-    window.addEventListener("pointermove", move);
-    return () => window.removeEventListener("pointermove", move);
-  }, [fine]);
-  return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <span className="l-blob l-blob--a" />
-      <span className="l-blob l-blob--b" />
-      <span className="l-blob l-blob--c" />
-      {fine && <div ref={halo} className="l-halo" />}
-    </div>
+/* sequence: the four worlds play one after another; each clip keeps its real length */
+const seq = (() => {
+  let t = 0;
+  return services.flatMap((s, track) =>
+    portfolio[s.id].map((item) => {
+      const d = secs(item.duration);
+      const c = { s, track, item, start: t, dur: d };
+      t += d;
+      return c;
+    }),
   );
-}
+})();
+const TOTAL = seq.reduce((n, c) => n + c.dur, 0);
 
-/** Blur-to-sharp for anything marked [data-soft] inside root. */
-function soften(root: Element) {
-  root.querySelectorAll<HTMLElement>("[data-soft]").forEach((el) => {
-    gsap.fromTo(el, { filter: "blur(18px)", opacity: 0, y: 30 }, { filter: "blur(0px)", opacity: 1, y: 0, duration: 1.6, ease: "expo.out", scrollTrigger: { trigger: el, start: "top 88%", once: true } });
-  });
-}
-
+/* ------------------------------------------------------------------ HERO: the preview monitor */
 function Hero({ hero, onMenu, onContact }: { hero: Img; onMenu: () => void; onContact: () => void }) {
   return (
     <EleHero
@@ -48,145 +33,187 @@ function Hero({ hero, onMenu, onContact }: { hero: Img; onMenu: () => void; onCo
       onMenu={onMenu}
       onContact={onContact}
       title={<Letters />}
-      back={
-        <>
-          <div aria-hidden className="l-sun" />
-          <div aria-hidden className="v2-arch" data-arch />
-        </>
+      back={<div aria-hidden className="v2-glow" />}
+      front={
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-[35]">
+          <div data-guides className="ed-guides absolute inset-[6%]" />
+          <span data-guides className="ed-safe absolute inset-[11%]" />
+          {["left-4 top-4", "right-4 top-4 rotate-90", "bottom-4 right-4 rotate-180", "bottom-4 left-4 -rotate-90"].map((p) => <span key={p} data-corner className={`ed-corner absolute ${p}`} />)}
+          <p data-guides className="absolute bottom-[68px] left-1/2 -translate-x-1/2 rounded-md bg-[rgba(30,14,12,0.72)] px-2.5 py-1 font-mono text-[11px] tracking-[0.08em] text-cream lg:bottom-16">● REC {tc(0)}</p>
+        </div>
       }
       motion={(root) => {
         const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-        tl.from(root, { opacity: 0, scale: 0.97, filter: "blur(20px)", duration: 1.6 })
-          .from(root.querySelector(".l-sun"), { scale: 0.3, opacity: 0, duration: 2.4 }, 0.3)
-          .from(root.querySelectorAll("[data-l]"), { opacity: 0, filter: "blur(24px)", scale: 1.15, duration: 1.8, stagger: 0.1 }, 0.5)
-          .from(root.querySelector("[data-arch]"), { opacity: 0, scaleY: 0.6, transformOrigin: "bottom", duration: 2 }, 0.7)
-          .from(root.querySelector("[data-fig]"), { opacity: 0, filter: "blur(20px)", y: 30, duration: 2 }, 0.9)
-          .from(root.querySelectorAll("[data-in]"), { opacity: 0, filter: "blur(8px)", duration: 1.2, stagger: 0.06 }, 1.5);
-        gsap.to(root.querySelector(".l-sun"), { scale: 1.12, opacity: 0.85, duration: 5, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to(root.querySelector(".v2-title"), { filter: "blur(10px)", opacity: 0.3, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.6 } });
+        tl.from(root, { scale: 0.86, filter: "brightness(0.6) saturate(0)", duration: 1.4, ease: "expo.inOut" })
+          .from(root.querySelectorAll("[data-corner]"), { scale: 2.4, opacity: 0, duration: 0.8, stagger: 0.05 }, 0.3)
+          .from(root.querySelectorAll("[data-guides]"), { opacity: 0, duration: 0.6 }, 0.6)
+          // keyframe-style arrivals: overshoot, settle
+          .from(root.querySelectorAll("[data-l]"), { scale: 0, rotate: (i) => [-18, 12, -8, 14, -12][i % 5], duration: 1, ease: "back.out(2.2)", stagger: 0.08 }, 0.8)
+          .from(root.querySelector("[data-fig]"), { xPercent: -30, opacity: 0, duration: 1.3, ease: "back.out(1.4)" }, 1.1)
+          .from(root.querySelectorAll("[data-in]"), { opacity: 0, y: -12, duration: 0.9, stagger: 0.05 }, 1.6)
+          .to(root.querySelectorAll("[data-guides]"), { opacity: 0, duration: 1.2 }, 2.8);
+        gsap.to(root, { scale: 0.9, borderRadius: 72, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.5 } });
       }}
     />
   );
 }
 
-function Portfolio({ portrait }: { portrait: Img }) {
-  const ref = useRef<HTMLElement>(null);
-  const fine = useFinePointer();
-  useMotion(ref, (root) => {
-    soften(root);
-    root.querySelectorAll<HTMLElement>("[data-card]").forEach((c, i) => {
-      gsap.fromTo(c, { y: 60 + (i % 3) * 30, filter: "blur(14px)", opacity: 0 }, { y: 0, filter: "blur(0px)", opacity: 1, ease: "none", scrollTrigger: { trigger: c, start: "top 98%", end: "top 65%", scrub: 0.6 } });
-    });
-  });
-  // soft 3D tilt on fine pointers
+/* ------------------------------------------------------------------ TIMELINE: scroll is the playhead */
+function Timeline({ portrait }: { portrait: Img }) {
+  const track = useRef<HTMLDivElement>(null);
+  const head = useRef<HTMLSpanElement>(null);
+  const clock = useRef<HTMLSpanElement>(null);
+  const [cur, setCur] = useState(0);
   useEffect(() => {
-    const root = ref.current;
-    if (!root || !fine) return;
-    const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-tilt]"));
-    const offs = cards.map((c) => {
-      const rx = gsap.quickTo(c, "rotateX", { duration: 0.6, ease: "power3.out" });
-      const ry = gsap.quickTo(c, "rotateY", { duration: 0.6, ease: "power3.out" });
-      const move = (e: PointerEvent) => {
-        const r = c.getBoundingClientRect();
-        ry(((e.clientX - r.left) / r.width - 0.5) * 12);
-        rx(-((e.clientY - r.top) / r.height - 0.5) * 12);
-      };
-      const leave = () => {
-        rx(0);
-        ry(0);
-      };
-      c.addEventListener("pointermove", move);
-      c.addEventListener("pointerleave", leave);
-      return () => {
-        c.removeEventListener("pointermove", move);
-        c.removeEventListener("pointerleave", leave);
-      };
+    reg();
+    const el = track.current;
+    if (!el) return;
+    let last = -1;
+    const st = ScrollTrigger.create({
+      trigger: el,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        const t = self.progress * TOTAL;
+        if (head.current) head.current.style.left = `${self.progress * 100}%`;
+        if (clock.current) clock.current.textContent = tc(t);
+        let i = seq.findIndex((c) => t >= c.start && t < c.start + c.dur);
+        if (i < 0) i = seq.length - 1;
+        if (i !== last) {
+          last = i;
+          setCur(i);
+        }
+      },
     });
-    return () => offs.forEach((f) => f());
-  }, [fine]);
-
+    return () => st.kill();
+  }, []);
+  const c = seq[cur];
+  const firstOf = services.map((s) => seq.findIndex((x) => x.s.id === s.id));
   return (
-    <section ref={ref} id="portafolio" aria-labelledby="p-title" className="mx-auto max-w-[1280px] px-5 py-[clamp(120px,15vw,220px)] sm:px-8 lg:px-12">
-      <div data-soft className="text-center">
-        <p className={kicker}>Portafolio</p>
-        <h2 id="p-title" className="mx-auto mt-6 max-w-[14ch] font-display text-[clamp(52px,8.4vw,136px)] leading-[0.92] tracking-[-0.02em]">Contenido con <em className="text-oxblood">luz propia</em></h2>
-        <p className="mx-auto mt-6 max-w-[30rem] text-[17px] text-ink-soft">Grabado en casa con luz natural. Doce piezas, cuatro mundos.</p>
+    <section id="portafolio" aria-labelledby="t-title">
+      <div className="mx-auto max-w-[1320px] px-5 pb-10 pt-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
+        <p className={kicker}>Portafolio · {tc(TOTAL).slice(3, 8)} de contenido</p>
+        <h2 id="t-title" className="mt-5 max-w-[16ch] font-display text-[clamp(44px,7vw,108px)] font-semibold leading-[0.92] tracking-[-0.04em]">Baja y <span className="text-oxblood">reproduce</span> mi timeline</h2>
       </div>
-      <div className="mt-24 space-y-28">
-        {services.map((s, i) => (
-          <div key={s.id} id={s.id} className="scroll-mt-24">
-            <div data-soft className={`l-glass mx-auto flex max-w-[560px] items-center justify-between gap-6 rounded-full px-6 py-4 sm:px-8 ${i % 2 ? "lg:ml-auto lg:mr-0" : "lg:ml-0"}`}>
-              <span className="font-display text-[15px] italic text-ink-soft">{s.n}</span>
-              <h3 className="font-display text-[clamp(30px,3.6vw,48px)] leading-none">{s.name}</h3>
-              <span className="text-right text-[13px] text-ink-soft">{s.desc}</span>
-            </div>
-            <ul className="mt-10 grid grid-cols-1 gap-6 [perspective:1200px] sm:grid-cols-3">
-              {portfolio[s.id].map((it, k) => (
-                <li key={it.brand} data-card className={k === 1 ? "sm:translate-y-12" : ""}>
-                  <div data-tilt className="l-glass rounded-[32px] p-2.5 [transform-style:preserve-3d]">
-                    <div className="relative aspect-[9/16] overflow-hidden rounded-[24px]">
-                      <Shot img={portrait} item={it} sizes="(min-width:640px) 30vw, 90vw" className="absolute inset-0" />
-                      <p className="absolute inset-x-4 top-[22%] text-center"><span className="box-decoration-clone rounded-md bg-cream/90 px-2 py-0.5 text-[14px] font-semibold leading-[1.75] text-ink">{it.hook}</span></p>
-                      <div className="l-glass absolute inset-x-3 bottom-3 flex items-center justify-between rounded-2xl px-4 py-3">
-                        <span className="font-display text-[19px] leading-none">{it.brand}</span>
-                        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-ink-soft">{it.format} · {it.duration}</span>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Process() {
-  const ref = useRef<HTMLElement>(null);
-  useMotion(ref, (root) => {
-    soften(root);
-    root.querySelectorAll("[data-float]").forEach((el, i) => gsap.to(el, { y: i % 2 ? -10 : 10, duration: 3 + i * 0.4, ease: "sine.inOut", yoyo: true, repeat: -1 }));
-  });
-  return (
-    <section ref={ref} id="proceso" aria-labelledby="pr-title" className="mx-auto max-w-[1280px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
-      <div data-soft className="max-w-[40rem]">
-        <p className={kicker}>Cómo trabajo</p>
-        <h2 id="pr-title" className="mt-6 font-display text-[clamp(52px,7.4vw,120px)] leading-[0.92] tracking-[-0.02em]">Ligero, <em className="text-oxblood">claro</em> y a tu ritmo</h2>
-      </div>
-      <ol className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map((s, i) => (
-          <li key={s.n} data-soft>
-            <div data-float className="l-glass flex h-full min-h-[300px] flex-col justify-between rounded-[32px] p-7" style={{ marginTop: `${[0, 40, 10, 50][i]}px` }}>
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-oxblood font-display text-[18px] italic text-cream">{s.n}</span>
-              <div>
-                <h3 className="font-display text-[36px] leading-none">{s.title}</h3>
-                <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">{s.text}</p>
+      <div ref={track} className="relative" style={{ height: "520svh" }}>
+        {services.map((s, i) => <span key={s.id} id={s.id} aria-hidden className="absolute left-0 h-px w-px" style={{ top: `${(seq[firstOf[i]].start / TOTAL) * 420 + 2}svh` }} />)}
+        <div className="sticky top-0 flex h-[100svh] flex-col gap-4 px-3 pb-4 pt-20 sm:px-4 lg:px-5 lg:pt-24">
+          {/* monitor */}
+          <div className="ed-panel grid min-h-0 flex-1 grid-cols-1 gap-4 rounded-[28px] p-3 sm:p-4 md:grid-cols-[1fr_auto_1fr] lg:rounded-[40px]">
+            <div className="hidden flex-col justify-between p-4 md:flex">
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-cream/55">Pista {c.track + 1} · {c.s.name}</p>
+              <div key={cur} className="ed-swap">
+                <p className="font-display text-[clamp(32px,3.6vw,60px)] font-semibold leading-[0.95] tracking-[-0.03em] text-cream">“{c.item.hook}”</p>
+                <p className="mt-3 text-[14px] text-cream/70">para {c.item.brand} · {c.item.format}</p>
               </div>
             </div>
-          </li>
-        ))}
-      </ol>
-      <ul data-soft className="mt-20 flex flex-wrap justify-center gap-3">
-        {formats.map((f) => (
-          <li key={f.name} title={f.note} className="l-glass rounded-full px-5 py-3 font-display text-[19px] transition-colors hover:bg-oxblood hover:text-cream">{f.name}</li>
-        ))}
-      </ul>
+            <div className="relative mx-auto aspect-[9/16] h-full max-h-full overflow-hidden rounded-[18px] bg-ink">
+              <Shot key={cur} img={portrait} item={c.item} sizes="360px" className="ed-cut absolute inset-0" />
+              <p className="absolute inset-x-3 top-[22%] text-center"><span className="box-decoration-clone rounded bg-cream px-1.5 py-0.5 text-[13px] font-semibold leading-[1.75] text-ink">{c.item.hook}</span></p>
+              <span className="absolute left-2 top-2 rounded bg-[rgba(30,14,12,0.7)] px-1.5 py-0.5 font-mono text-[10px] text-cream"><span ref={clock}>{tc(0)}</span></span>
+            </div>
+            <div className="hidden flex-col items-end justify-between p-4 text-right md:flex">
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-cream/55">Clip {String(cur + 1).padStart(2, "0")} / {seq.length}</p>
+              <dl className="space-y-3 font-mono text-[12px] text-cream/80">
+                <div><dt className="text-cream/45">Duración</dt><dd>{c.item.duration}</dd></div>
+                <div><dt className="text-cream/45">Formato</dt><dd>{c.item.format}</dd></div>
+                <div><dt className="text-cream/45">Relación</dt><dd>9:16 · subtítulos</dd></div>
+              </dl>
+            </div>
+          </div>
+          {/* timeline */}
+          <div className="ed-panel relative rounded-[22px] p-3 sm:p-4 lg:rounded-[28px]">
+            <div className="relative ml-[64px] sm:ml-[92px]">
+              <div aria-hidden className="ed-ruler mb-2 h-4" />
+              <div className="space-y-1.5">
+                {services.map((s, ti) => (
+                  <div key={s.id} className="relative h-8 rounded-md bg-cream/5 sm:h-10">
+                    <span className={`absolute -left-[64px] top-1/2 w-[58px] -translate-y-1/2 truncate font-mono text-[10px] uppercase sm:-left-[92px] sm:w-[84px] sm:text-[11px] ${c.track === ti ? "text-cream" : "text-cream/45"}`}>{s.name}</span>
+                    {seq.filter((x) => x.track === ti).map((x) => {
+                      const on = seq[cur] === x;
+                      return (
+                        <span key={x.item.brand} className={`absolute top-0 h-full overflow-hidden rounded-md border transition-colors ${on ? "border-cream" : "border-transparent"}`} style={{ left: `${(x.start / TOTAL) * 100}%`, width: `calc(${(x.dur / TOTAL) * 100}% - 2px)`, background: x.item.tone === "oxblood" ? "#7a2a2f" : "#cdb592" }}>
+                          <span className="absolute inset-y-0 left-0 w-8 opacity-80"><Shot img={portrait} item={x.item} sizes="40px" className="absolute inset-0" /></span>
+                          <span className={`absolute inset-y-0 left-9 hidden items-center truncate text-[11px] font-medium lg:flex ${x.item.tone === "oxblood" ? "text-cream" : "text-ink"}`}>{x.item.brand}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+              <span ref={head} aria-hidden className="ed-head absolute -bottom-1 -top-1 w-px bg-[#e9a596]" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <ul className="sr-only">{seq.map((x) => <li key={x.item.brand}>{x.s.name}: “{x.item.hook}”, para {x.item.brand}, {x.item.format}, {x.item.duration}</li>)}</ul>
     </section>
   );
 }
 
-function Brands() {
+/* ------------------------------------------------------------------ PROCESS: an export bar */
+function Export() {
+  const ref = useRef<HTMLElement>(null);
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    reg();
+    const el = ref.current?.querySelector<HTMLElement>("[data-run]");
+    if (!el) return;
+    const st = ScrollTrigger.create({ trigger: el, start: "top 70%", end: "bottom 50%", onUpdate: (s) => setP(s.progress) });
+    return () => st.kill();
+  }, []);
+  const step = Math.min(steps.length - 1, Math.floor(p * steps.length));
   return (
-    <section aria-labelledby="b-title" className="py-[clamp(80px,10vw,140px)]">
-      <h2 id="b-title" className={`${kicker} text-center`}>Marcas con las que he trabajado</h2>
-      <div className="l-fade mt-10 overflow-hidden">
-        <div className="l-marquee flex w-max gap-14">
-          {[...brands, ...brands].map((b, i) => (
-            <span key={i} aria-hidden={i >= brands.length || undefined} className="font-display text-[clamp(34px,4.4vw,64px)] italic text-ink/80">{b}</span>
-          ))}
+    <section ref={ref} id="proceso" aria-labelledby="e-title" className="mx-auto max-w-[1100px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8">
+      <p className={kicker}>Cómo trabajo</p>
+      <h2 id="e-title" className="mt-5 font-display text-[clamp(44px,6.4vw,100px)] font-semibold leading-[0.95] tracking-[-0.04em]">Exportando <span className="text-oxblood">tu video</span>…</h2>
+      <div data-run className="relative mt-14" style={{ height: "160svh" }}>
+        <div className="sticky top-[18svh] rounded-[28px] bg-[#f8f3ea] p-6 shadow-[0_40px_70px_-50px_rgba(42,27,22,0.6)] sm:p-10">
+          <div className="flex items-baseline justify-between font-mono text-[13px]">
+            <span>Paso {step + 1} de {steps.length} · {steps[step].title}</span>
+            <span className="tabular-nums">{Math.round(p * 100)}%</span>
+          </div>
+          <div className="mt-4 h-3 overflow-hidden rounded-full bg-ink/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)} aria-label="Progreso del proceso">
+            <div className="h-full rounded-full bg-oxblood transition-[width] duration-150" style={{ width: `${p * 100}%` }} />
+          </div>
+          <ol className="mt-8 grid gap-4 sm:grid-cols-4">
+            {steps.map((s, k) => (
+              <li key={s.n} className={`rounded-[20px] p-5 transition-all duration-500 ${k <= step ? "bg-ink text-cream" : "bg-cream text-ink/45"} ${k === step ? "" : "hidden sm:block"}`}>
+                <p className="font-mono text-[11px] uppercase tracking-[0.12em] opacity-70">{k < step ? "✓ Listo" : k === step ? "En curso" : "En cola"}</p>
+                <h3 className="mt-3 font-display text-[26px] font-semibold leading-none tracking-[-0.02em]">{s.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed opacity-80">{s.text}</p>
+              </li>
+            ))}
+          </ol>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function Presets() {
+  const ref = useRef<HTMLElement>(null);
+  useMotion(ref, (root) => {
+    gsap.from(root.querySelectorAll("[data-p]"), { y: 50, opacity: 0, scale: 0.94, duration: 1, ease: "back.out(1.5)", stagger: 0.06, scrollTrigger: { trigger: root, start: "top 75%", once: true } });
+  });
+  return (
+    <section ref={ref} aria-labelledby="pr-title" className="bg-ink py-[clamp(100px,12vw,170px)] text-cream">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12">
+        <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-cream/55">Plantillas</p>
+        <h2 id="pr-title" className="mt-5 font-display text-[clamp(40px,5.4vw,80px)] font-semibold leading-[0.95] tracking-[-0.04em]">Formatos listos <span className="text-[#e9a596]">para tu marca</span></h2>
+        <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {formats.map((f, i) => (
+            <li key={f.name} data-p className="group rounded-[22px] border border-cream/12 bg-cream/[0.04] p-5 transition-colors hover:bg-cream hover:text-ink">
+              <p className="font-mono text-[11px] text-cream/50 group-hover:text-ink/50">.preset {String(i + 1).padStart(2, "0")}</p>
+              <p className="mt-6 font-display text-[28px] font-semibold leading-none tracking-[-0.02em]">{f.name}</p>
+              <p className="mt-2 text-[14px] opacity-75">{f.note}</p>
+            </li>
+          ))}
+          <li data-p className="rounded-[22px] bg-oxblood p-5">
+            <p className="font-mono text-[11px] text-cream/60">.marcas</p>
+            <p className="mt-6 text-[14px] leading-relaxed">{brands.join(" · ")}</p>
+          </li>
+        </ul>
       </div>
     </section>
   );
@@ -195,88 +222,73 @@ function Brands() {
 function About({ portrait }: { portrait: Img }) {
   const ref = useRef<HTMLElement>(null);
   useMotion(ref, (root) => {
-    soften(root);
-    const s = new SplitText(root.querySelector("[data-txt]")!, { type: "words" });
-    gsap.fromTo(s.words, { filter: "blur(8px)", opacity: 0.2 }, { filter: "blur(0px)", opacity: 1, ease: "none", stagger: 0.08, scrollTrigger: { trigger: root.querySelector("[data-txt]"), start: "top 85%", end: "bottom 65%", scrub: 0.5 } });
-    return () => s.revert();
+    gsap.fromTo(root.querySelector("[data-mon]"), { clipPath: "inset(48% 0% 48% 0% round 24px)" }, { clipPath: "inset(0% 0% 0% 0% round 24px)", ease: "none", scrollTrigger: { trigger: root, start: "top 85%", end: "center 55%", scrub: 0.5 } });
   });
   return (
     <section ref={ref} id="sobre-mi" aria-labelledby="a-title" className="mx-auto max-w-[1200px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
-      <div className="grid items-center gap-14 lg:grid-cols-2">
-        <div data-soft className="relative mx-auto w-full max-w-[460px]">
-          <div className="l-morph relative aspect-[4/5] overflow-hidden" style={{ background: "#d6c3a9" }}>
-            <img src={portrait.src} srcSet={portrait.srcSet} sizes="460px" alt="Retrato de Steff Ramírez" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top mix-blend-multiply" />
-          </div>
-          <div className="l-glass absolute -bottom-6 -right-2 rounded-2xl px-5 py-4 sm:-right-8">
-            <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-ink-soft">Grabado con</p>
-            <p className="font-display text-[24px] italic leading-none">luz natural</p>
+      <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div data-mon className="ed-panel relative aspect-[4/5] overflow-hidden rounded-[24px] p-3">
+          <div className="relative h-full w-full overflow-hidden rounded-[16px]" style={{ background: "#d6c3a9" }}>
+            <img src={portrait.src} srcSet={portrait.srcSet} sizes="(min-width:1024px) 50vw, 100vw" alt="Retrato de Steff Ramírez" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top mix-blend-multiply" />
+            <span className="ed-guides absolute inset-[8%] opacity-60" />
           </div>
         </div>
         <div>
           <p className={kicker}>Sobre mí</p>
-          <h2 id="a-title" className="mt-6 font-display text-[clamp(52px,6.4vw,104px)] leading-[0.92] tracking-[-0.02em]">Hola, soy <em className="text-oxblood">Steff</em></h2>
-          <p data-txt className="mt-8 font-display text-[clamp(24px,2.4vw,34px)] leading-[1.3]">
-            Creo contenido que se siente como la recomendación de una amiga, no como un anuncio. Moda, belleza y el día a día de una mamá real, grabado con cuidado y mucha cercanía.
-          </p>
+          <h2 id="a-title" className="mt-5 font-display text-[clamp(44px,6vw,92px)] font-semibold leading-[0.95] tracking-[-0.04em]">Directora, actriz <span className="text-oxblood">y editora</span></h2>
+          <p className="mt-6 text-[19px] leading-[1.7]">Soy Steff. Escribo, grabo y edito contenido que se siente como la recomendación de una amiga, no como un anuncio. Moda, belleza y el día a día de una mamá real, con luz natural y mucha cercanía.</p>
+          <dl className="mt-8 grid grid-cols-2 gap-3 font-mono text-[13px] sm:grid-cols-4">
+            {[["Idioma", "Español"], ["Luz", "Natural"], ["Formato", "9:16"], ["Extras", "Subtítulos"]].map(([k, v]) => (
+              <div key={k} className="rounded-2xl bg-[#f8f3ea] p-3"><dt className="text-ink-soft">{k}</dt><dd className="mt-1 font-medium">{v}</dd></div>
+            ))}
+          </dl>
         </div>
       </div>
     </section>
   );
 }
 
-function Faq() {
+function Shortcuts() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" aria-labelledby="f-title" className="mx-auto max-w-[900px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8">
-      <p className={`${kicker} text-center`}>Preguntas frecuentes</p>
-      <h2 id="f-title" className="mt-6 text-center font-display text-[clamp(48px,6vw,96px)] leading-[0.95]">Lo que <em className="text-oxblood">quizá</em> te preguntas</h2>
-      <ul className="mt-14 space-y-3">
-        {faqs.map((f, i) => (
-          <li key={f.q} className={`l-glass rounded-[28px] transition-colors ${open === i ? "bg-cream/70" : ""}`}>
-            <h3>
-              <button type="button" aria-expanded={open === i} aria-controls={`lq${i}`} onClick={() => setOpen(open === i ? null : i)} className="flex w-full cursor-pointer items-center gap-5 px-6 py-5 text-left sm:px-8">
-                <span className="flex-1 font-display text-[clamp(21px,2.2vw,28px)] leading-tight">{f.q}</span>
-                <span aria-hidden className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ink/20 transition-all duration-500 ${open === i ? "rotate-45 border-oxblood bg-oxblood text-cream" : ""}`}>+</span>
-              </button>
-            </h3>
-            <div id={`lq${i}`} role="region" className="faq-panel" data-open={open === i} inert={open !== i}>
-              <div><p className="px-6 pb-6 text-[16px] leading-relaxed text-ink-soft sm:px-8">{f.a}</p></div>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <section id="faq" aria-labelledby="f-title" className="bg-[#ece3d5] py-[clamp(110px,14vw,200px)]">
+      <div className="mx-auto max-w-[980px] px-5 sm:px-8">
+        <p className={kicker}>Atajos</p>
+        <h2 id="f-title" className="mt-5 font-display text-[clamp(44px,6vw,92px)] font-semibold leading-[0.95] tracking-[-0.04em]">Respuestas <span className="text-oxblood">rápidas</span></h2>
+        <ul className="mt-12 space-y-2.5">
+          {faqs.map((f, i) => (
+            <li key={f.q} className="overflow-hidden rounded-[20px] bg-[#f8f3ea]">
+              <h3>
+                <button type="button" aria-expanded={open === i} aria-controls={`eq${i}`} onClick={() => setOpen(open === i ? null : i)} className="flex w-full cursor-pointer items-center gap-4 p-4 text-left sm:p-5">
+                  <kbd className={`grid h-9 min-w-9 place-items-center rounded-lg border-b-2 px-2 font-mono text-[13px] transition-colors ${open === i ? "border-[#3a0f13] bg-oxblood text-cream" : "border-ink/25 bg-cream"}`}>{i + 1}</kbd>
+                  <span className="flex-1 font-display text-[clamp(19px,2vw,24px)] font-medium leading-tight tracking-[-0.01em]">{f.q}</span>
+                  <span aria-hidden className={`font-mono text-[18px] transition-transform ${open === i ? "rotate-45" : ""}`}>+</span>
+                </button>
+              </h3>
+              <div id={`eq${i}`} role="region" className="faq-panel" data-open={open === i} inert={open !== i}>
+                <div><p className="px-5 pb-6 pl-[68px] text-[16px] leading-relaxed text-ink-soft">{f.a}</p></div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
 
 function Contact({ onContact }: { onContact: () => void }) {
-  const ref = useRef<HTMLElement>(null);
-  const card = useRef<HTMLDivElement>(null);
-  const fine = useFinePointer();
   const { copy, done } = useCopy(EMAIL);
-  useMotion(ref, (root) => soften(root));
-  useEffect(() => {
-    const c = card.current;
-    if (!c || !fine) return;
-    const move = (e: PointerEvent) => {
-      const r = c.getBoundingClientRect();
-      c.style.setProperty("--gx", `${((e.clientX - r.left) / r.width) * 100}%`);
-      c.style.setProperty("--gy", `${((e.clientY - r.top) / r.height) * 100}%`);
-    };
-    c.addEventListener("pointermove", move);
-    return () => c.removeEventListener("pointermove", move);
-  }, [fine]);
   return (
-    <section ref={ref} id="contacto" aria-labelledby="c-title" className="v2-frame">
-      <div ref={card} className="l-contact grain v2-radius relative flex min-h-[86svh] flex-col items-center justify-center overflow-hidden px-5 py-24 text-center">
-        <p data-soft className={kicker}>Contacto</p>
-        <h2 id="c-title" data-soft className="mt-6 font-display text-[clamp(64px,12vw,200px)] leading-[0.9] tracking-[-0.02em]">Hablemos <em className="text-oxblood">bonito</em></h2>
-        <button data-soft type="button" onClick={onContact} className="group mt-10 inline-flex h-14 cursor-pointer items-center gap-5 rounded-full bg-ink pl-7 pr-2 text-[12px] font-medium uppercase tracking-[0.22em] text-cream transition-colors hover:bg-oxblood">
-          Escríbeme<span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-ink transition-transform duration-500 group-hover:rotate-45">↗</span>
+    <section id="contacto" aria-labelledby="c-title" className="v2-frame">
+      <div className="grain v2-radius relative flex min-h-[80svh] flex-col items-center justify-center overflow-hidden px-5 py-24 text-center" style={{ background: "linear-gradient(165deg,#dccab2 0%,#d3bfa5 48%,#c7af93 100%)" }}>
+        <p className={kicker}>Contacto</p>
+        <h2 id="c-title" className="mt-6 font-display text-[clamp(52px,9vw,150px)] font-semibold leading-[0.9] tracking-[-0.05em]">Nuevo <span className="text-oxblood">proyecto</span></h2>
+        <button type="button" onClick={onContact} className="group mt-10 inline-flex h-14 cursor-pointer items-center gap-5 rounded-full bg-ink pl-7 pr-2 text-[12px] font-medium uppercase tracking-[0.22em] text-cream transition-colors hover:bg-oxblood">
+          Empezar a grabar<span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-ink"><span className="block h-3 w-3 rounded-full bg-[#b3261e] transition-transform group-hover:scale-125" /></span>
         </button>
-        <p className="mt-6 text-[14px] text-ink-soft"><a href={`mailto:${EMAIL}`} className="underline decoration-ink/30 underline-offset-4 hover:decoration-ink">{EMAIL}</a> · <button type="button" onClick={copy} className="cursor-pointer underline decoration-ink/30 underline-offset-4">{done ? "copiado" : "copiar"}</button></p>
-        <ul className="mt-8 flex gap-3">
-          {socials.map((s) => <li key={s.label}><a href={s.url} target="_blank" rel="noopener noreferrer" className="l-glass inline-flex rounded-full px-5 py-3 text-[11px] font-medium uppercase tracking-[0.22em]">{s.label} ↗<span className="sr-only"> (se abre en una pestaña nueva)</span></a></li>)}
+        <p className="mt-6 text-[14px] text-ink-soft"><a href={`mailto:${EMAIL}`} className="underline decoration-ink/30 underline-offset-4">{EMAIL}</a> · <button type="button" onClick={copy} className="cursor-pointer underline decoration-ink/30 underline-offset-4">{done ? "copiado" : "copiar"}</button></p>
+        <ul className="mt-8 flex gap-6 text-[11px] font-medium uppercase tracking-[0.24em]">
+          {socials.map((s) => <li key={s.label}><a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-oxblood">{s.label} ↗<span className="sr-only"> (se abre en una pestaña nueva)</span></a></li>)}
         </ul>
         <p className="absolute bottom-6 text-[12px] text-ink-soft">© 2026 Steff Ramírez · UGC Creator</p>
       </div>
@@ -289,13 +301,12 @@ export default function App({ hero, portrait }: P) {
     <Shell>
       {({ openMenu, openContact }) => (
         <>
-          <Ambient />
           <Hero hero={hero} onMenu={openMenu} onContact={openContact} />
-          <Portfolio portrait={portrait} />
-          <Brands />
-          <Process />
+          <Timeline portrait={portrait} />
+          <Export />
+          <Presets />
           <About portrait={portrait} />
-          <Faq />
+          <Shortcuts />
           <Contact onContact={openContact} />
         </>
       )}
