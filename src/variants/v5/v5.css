@@ -1,33 +1,4 @@
-/* Galería — builds on the homepage stylesheet (v2.css) */
-.g-mat {
-  inset: 18px;
-  border: 1px solid rgba(42, 27, 22, 0.14);
-  border-radius: 20px;
-}
-@media (min-width: 1024px) { .g-mat { inset: 26px; border-radius: 34px; } }
-.g-frame {
-  position: relative;
-  padding: 18px;
-  background: #fbf8f2;
-  border: 6px solid #2a1b16;
-  box-shadow: 0 2px 0 rgba(255, 255, 255, 0.6) inset, 0 40px 60px -36px rgba(42, 27, 22, 0.6), 0 8px 18px -12px rgba(42, 27, 22, 0.35);
-}
-@media (min-width: 1024px) { .g-frame { padding: 26px; } }
-.g-light {
-  height: 70px;
-  margin: 0 auto -18px;
-  width: 70%;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255, 244, 226, 0.95), rgba(255, 244, 226, 0) 70%);
-  filter: blur(4px);
-  position: relative;
-  z-index: 1;
-}
-.g-label { padding-left: 14px; border-left: 1px solid rgba(92, 26, 31, 0.45); }
-.g-stub {
-  position: relative;
-  border-top: 2px dashed rgba(42, 27, 22, 0.25);
-  background: #f4eee3;
-}
-@media (min-width: 640px) {
-  .g-stub { border-top: 0; border-left: 2px dashed rgba(42, 27, 22, 0.25); }
-}
+/* Tablero — builds on the homepage stylesheet (v2.css); headings in Playfair Display */
+:root { --font-display: "Playfair Display", Georgia, serif; }
+.v2-title { font-weight: 600; letter-spacing: -0.02em; }
+.mb-grid { background-image: radial-gradient(circle, rgba(42, 27, 22, 0.16) 1px, transparent 1.3px); background-size: 22px 22px; }

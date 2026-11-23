@@ -1,256 +1,281 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Draggable } from "gsap/Draggable";
 import { EMAIL, socials, services, portfolio, brands, steps, faqs, formats, type VideoItem } from "../../v2/data";
 import type { Img } from "../images";
-import { gsap, SplitText, useMotion, useCopy } from "../kit";
+import { gsap, useMotion, useCopy, useFinePointer } from "../kit";
 import { Shell } from "../Shell";
 import { EleHero, Letters } from "../EleHero";
 import { Shot } from "../parts";
 
 type P = { hero: Img; portrait: Img };
-const kicker = "text-[11px] font-medium uppercase tracking-[0.28em] text-ink-soft";
-const roman = ["I", "II", "III", "IV"];
+const kicker = "text-[11px] font-medium uppercase tracking-[0.26em] text-ink-soft";
 
-function Hero({ hero, onMenu, onContact }: { hero: Img; onMenu: () => void; onContact: () => void }) {
+/* ------------------------------------------------------------------ HERO: clips land around the figure */
+const fly = [
+  { k: "moda", i: 0, cls: "left-[3%] top-[22%] w-[18vw] max-w-[150px] -rotate-6 lg:left-[6%] lg:top-[16%]" },
+  { k: "belleza", i: 0, cls: "right-[3%] top-[18%] w-[16vw] max-w-[140px] rotate-6 lg:right-[7%] lg:top-[14%]" },
+  { k: "lifestyle", i: 1, cls: "left-[8%] bottom-[10%] w-[15vw] max-w-[130px] rotate-3 hidden sm:block lg:left-[14%]" },
+  { k: "momlife", i: 1, cls: "right-[7%] bottom-[12%] w-[15vw] max-w-[130px] -rotate-3 hidden sm:block lg:right-[14%]" },
+] as const;
+function Hero({ hero, portrait, onMenu, onContact }: { hero: Img; portrait: Img; onMenu: () => void; onContact: () => void }) {
   return (
     <EleHero
       hero={hero}
       onMenu={onMenu}
       onContact={onContact}
-      title={<Letters />}
       flanks={false}
-      back={<div aria-hidden className="v2-glow" />}
-      front={
+      title={<Letters />}
+      back={
         <>
-          <span aria-hidden data-mat className="g-mat pointer-events-none absolute z-[5]" />
-          <div data-in className="g-plaque absolute bottom-20 left-12 z-30 hidden max-w-[240px] lg:block">
-            <p className="font-display text-[19px] italic leading-tight">Steff Ramírez</p>
-            <p className="mt-1 text-[12px] leading-snug text-ink-soft">Contenido UGC, 2026<br />Video vertical 9:16, luz natural</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.24em] text-ink-soft">Exposición permanente</p>
-          </div>
+          <div aria-hidden className="v2-glow" />
+          <div aria-hidden className="mb-grid absolute inset-0 -z-10" />
         </>
+      }
+      front={
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-[15]">
+          {fly.map((f) => (
+            <div key={f.k} data-fly className={`absolute ${f.cls}`}>
+              <div className="relative aspect-[9/16] overflow-hidden rounded-[14px] shadow-[0_24px_40px_-20px_rgba(42,27,22,0.55)] ring-[5px] ring-[#fbf8f2]">
+                <Shot img={portrait} item={portfolio[f.k][f.i]} sizes="150px" className="absolute inset-0" />
+              </div>
+            </div>
+          ))}
+        </div>
       }
       motion={(root) => {
         const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-        tl.from(root, { opacity: 0, duration: 1.2 })
-          .from(root.querySelector("[data-mat]"), { scale: 1.06, opacity: 0, duration: 2 }, 0.2)
-          .from(root.querySelectorAll("[data-l]"), { opacity: 0, y: 30, duration: 2, stagger: 0.12 }, 0.5)
-          .from(root.querySelector("[data-fig]"), { opacity: 0, y: 24, duration: 2.2 }, 0.9)
-          .from(root.querySelectorAll("[data-in]"), { opacity: 0, duration: 1.4, stagger: 0.08 }, 1.6);
-        gsap.to(root.querySelector("[data-mat]"), { scale: 0.96, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.6 } });
+        tl.from(root, { scale: 0.92, opacity: 0, duration: 1.1 })
+          .from(root.querySelectorAll("[data-l]"), { yPercent: 70, opacity: 0, duration: 1.2, stagger: 0.06 }, 0.3)
+          .from(root.querySelector("[data-fig]"), { yPercent: 15, opacity: 0, duration: 1.4 }, 0.5)
+          .from(root.querySelectorAll("[data-fly]"), { x: (i) => (i % 2 ? 500 : -500), y: (i) => (i < 2 ? -300 : 300), rotate: (i) => (i % 2 ? 40 : -40), opacity: 0, duration: 1.4, ease: "back.out(1.2)", stagger: 0.12 }, 0.7)
+          .from(root.querySelectorAll("[data-in]"), { opacity: 0, y: -12, duration: 0.9, stagger: 0.05 }, 1.4);
+        root.querySelectorAll("[data-fly]").forEach((f, i) => gsap.to(f, { x: (i % 2 ? 1 : -1) * 220, y: i < 2 ? -80 : 120, rotate: (i % 2 ? 1 : -1) * 14, ease: "none", scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.5 } }));
       }}
     />
   );
 }
 
-function Frame({ img, item, cat, n }: { img: Img; item: VideoItem; cat: string; n: string }) {
+/* ------------------------------------------------------------------ the canvas */
+const W = 2200;
+const H = 1400;
+const clusters: Record<string, { x: number; y: number }> = { moda: { x: 140, y: 120 }, belleza: { x: 1220, y: 90 }, lifestyle: { x: 240, y: 760 }, momlife: { x: 1300, y: 740 } };
+const offs = [{ x: 0, y: 150, r: -3 }, { x: 260, y: 100, r: 2 }, { x: 520, y: 170, r: -1.5 }];
+
+function Card({ img, item }: { img: Img; item: VideoItem }) {
   return (
-    <figure data-work className="group">
-      <div className="g-light" aria-hidden />
-      <div className="g-frame transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1.5">
-        <div className="relative aspect-[9/16] overflow-hidden">
-          <Shot img={img} item={item} sizes="(min-width:1024px) 24vw, 70vw" className="absolute inset-0 transition-transform duration-[1.4s] group-hover:scale-[1.03]" />
-        </div>
+    <figure className="group w-[220px]">
+      <div className="relative aspect-[9/16] overflow-hidden rounded-[18px] bg-cream shadow-[0_30px_50px_-30px_rgba(42,27,22,0.6)] ring-1 ring-ink/10 transition-transform duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+        <Shot img={img} item={item} sizes="220px" className="absolute inset-0" />
+        <p className="absolute inset-x-3 top-[20%] text-center"><span className="box-decoration-clone rounded bg-cream px-1.5 py-0.5 text-[12px] font-semibold leading-[1.75] text-ink">{item.hook}</span></p>
       </div>
-      <figcaption className="g-label mx-auto mt-7 max-w-[260px]">
-        <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-ink-soft">{cat} · Nº {n}</p>
-        <p className="mt-2 font-display text-[20px] italic leading-tight">{item.hook}</p>
-        <p className="mt-2 text-[12px] leading-snug text-ink-soft">Steff Ramírez, 2026<br />Video vertical, {item.duration} · {item.format}<br />Encargo de {item.brand}</p>
-      </figcaption>
+      <figcaption className="mt-2 flex justify-between gap-2 px-1 text-[12px]"><span className="font-medium">{item.brand}</span><span className="text-ink-soft">{item.format} · {item.duration}</span></figcaption>
     </figure>
   );
 }
 
-function Rooms({ portrait }: { portrait: Img }) {
+function Board({ portrait }: { portrait: Img }) {
   const ref = useRef<HTMLElement>(null);
-  const first = portfolio.moda[0];
+  const view = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLDivElement>(null);
+  const pointer = useFinePointer();
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const on = () => setWide(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const fine = pointer && wide;
+  const [pos, setPos] = useState({ x: 0, y: 0, vw: 1, vh: 1 });
+  const drag = useRef<Draggable | null>(null);
+
+  useEffect(() => {
+    const v = view.current;
+    const c = canvas.current;
+    if (!fine || !v || !c) return;
+    gsap.registerPlugin(Draggable);
+    const sync = () => setPos({ x: -Number(gsap.getProperty(c, "x")), y: -Number(gsap.getProperty(c, "y")), vw: v.clientWidth, vh: v.clientHeight });
+    gsap.set(c, { x: -(W - v.clientWidth) / 2 + 200, y: -(H - v.clientHeight) / 2 });
+    const [d] = Draggable.create(c, { type: "x,y", bounds: v, edgeResistance: 0.85, onDrag: sync, onThrowUpdate: sync, cursor: "grab", activeCursor: "grabbing" });
+    drag.current = d;
+    sync();
+    return () => d.kill();
+  }, [fine]);
+
+  const goTo = (id: string) => {
+    const v = view.current;
+    const c = canvas.current;
+    if (!v || !c) return;
+    const p = clusters[id];
+    const x = Math.min(0, Math.max(v.clientWidth - W, -(p.x + 390 - v.clientWidth / 2)));
+    const y = Math.min(0, Math.max(v.clientHeight - H, -(p.y + 260 - v.clientHeight / 2)));
+    gsap.to(c, { x, y, duration: 1.1, ease: "expo.inOut", onUpdate: () => setPos({ x: -x, y: -y, vw: v.clientWidth, vh: v.clientHeight }), onComplete: () => drag.current?.update() });
+  };
+
   useMotion(ref, (root) => {
-    // the first piece grows until it fills the screen, then the rooms open
-    const intro = root.querySelector<HTMLElement>("[data-intro]")!;
-    gsap.timeline({ scrollTrigger: { trigger: intro, start: "top top", end: "+=120%", pin: true, scrub: 0.6 } })
-      .fromTo(intro.querySelector("[data-zoom]"), { width: "min(26vw, 280px)", height: "min(46vw, 500px)" }, { width: "100vw", height: "100svh", borderWidth: 0, ease: "none" })
-      .to(intro.querySelector("[data-cap]"), { opacity: 0, ease: "none" }, 0)
-      .fromTo(intro.querySelector("[data-over]"), { opacity: 0 }, { opacity: 1, ease: "none" }, 0.55);
-    root.querySelectorAll<HTMLElement>("[data-work]").forEach((w) => {
-      gsap.from(w, { opacity: 0, y: 50, duration: 1.6, ease: "expo.out", scrollTrigger: { trigger: w, start: "top 88%", once: true } });
-      gsap.from(w.querySelector(".g-light"), { opacity: 0, duration: 2, delay: 0.4, scrollTrigger: { trigger: w, start: "top 88%", once: true } });
-    });
+    gsap.from(root.querySelectorAll("[data-pin]"), { scale: 0.6, opacity: 0, rotate: () => gsap.utils.random(-14, 14), duration: 1, ease: "back.out(1.6)", stagger: 0.05, scrollTrigger: { trigger: root.querySelector("[data-view]"), start: "top 75%", once: true } });
   });
+
   return (
-    <section ref={ref} id="portafolio" aria-labelledby="g-title">
-      <div data-intro className="relative grid h-[100svh] place-items-center overflow-hidden">
-        <div data-cap className="absolute top-[12svh] text-center">
-          <p className={kicker}>La colección</p>
-          <h2 id="g-title" className="mt-4 font-display text-[clamp(44px,6vw,96px)] leading-[0.95]">Cuatro <em className="text-oxblood">salas</em></h2>
+    <section ref={ref} id="portafolio" aria-labelledby="b-title" className="py-[clamp(110px,14vw,200px)]">
+      <div className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-6 px-5 sm:px-8 lg:px-12">
+        <div>
+          <p className={kicker}>Portafolio</p>
+          <h2 id="b-title" className="mt-5 max-w-[14ch] font-display text-[clamp(44px,7vw,108px)] leading-[0.95] tracking-[-0.02em]">Mi tablero <em className="text-oxblood">de trabajo</em></h2>
         </div>
-        <div data-zoom className="relative overflow-hidden border-[14px] border-[#fbf8f2] shadow-[0_40px_80px_-40px_rgba(42,27,22,0.55)]">
-          <Shot img={portrait} item={first} sizes="100vw" className="absolute inset-0" />
-          <div data-over className="absolute inset-0 grid place-items-center bg-[rgba(30,14,12,0.35)] text-center text-cream">
-            <p className="font-display text-[clamp(44px,7vw,120px)] italic leading-none">“{first.hook}”</p>
-          </div>
-        </div>
+        <p className="max-w-[20rem] text-[15px] text-ink-soft">{fine ? "Arrastra el tablero para explorarlo o salta a un mundo." : "Desliza cada mundo para ver sus piezas."}</p>
       </div>
-      <div className="mx-auto max-w-[1280px] px-5 pb-[clamp(100px,12vw,180px)] sm:px-8 lg:px-12">
-        {services.map((s, i) => (
-          <div key={s.id} id={s.id} className="scroll-mt-20 pt-[clamp(100px,12vw,180px)]">
-            <div className="mb-14 flex flex-wrap items-end justify-between gap-6 border-b border-ink/15 pb-6">
-              <div>
-                <p className={kicker}>Sala {roman[i]}</p>
-                <h3 className="mt-3 font-display text-[clamp(48px,6vw,96px)] leading-[0.9]">{s.name}</h3>
+
+      {fine ? (
+        <div className="relative mt-12 px-3 sm:px-4 lg:px-5">
+          <div ref={view} data-view className="mb-grid relative h-[78svh] min-h-[520px] overflow-hidden rounded-[40px] bg-[#f8f3ea] ring-1 ring-ink/10 lg:rounded-[52px]">
+            <div ref={canvas} className="absolute left-0 top-0" style={{ width: W, height: H }}>
+              {services.map((s) => {
+                const c = clusters[s.id];
+                return (
+                  <div key={s.id} id={s.id}>
+                    <div data-pin className="absolute rounded-[18px] bg-ink px-5 py-4 text-cream shadow-lg" style={{ left: c.x, top: c.y - 10 }}>
+                      <p className="text-[10px] uppercase tracking-[0.24em] text-cream/60">{s.n} · {portfolio[s.id].length} piezas</p>
+                      <h3 className="mt-1 font-display text-[34px] leading-none">{s.name}</h3>
+                    </div>
+                    {portfolio[s.id].map((it, k) => (
+                      <div key={it.brand} data-pin className="absolute" style={{ left: c.x + offs[k].x, top: c.y + offs[k].y, rotate: `${offs[k].r}deg` }}>
+                        <Card img={portrait} item={it} />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+              <div data-pin className="absolute w-[300px] rounded-[18px] bg-oxblood p-5 text-cream" style={{ left: 920, top: 640, rotate: "2deg" }}>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-cream/60">Formatos</p>
+                <p className="mt-2 font-display text-[20px] leading-snug">{formats.map((f) => f.name).join(" · ")}</p>
               </div>
-              <p className="max-w-[18rem] text-[15px] text-ink-soft">{s.desc}</p>
             </div>
-            <div className="grid gap-x-10 gap-y-20 sm:grid-cols-3">
-              {portfolio[s.id].map((it, k) => (
-                <div key={it.brand} className={k === 1 ? "sm:mt-16" : ""}>
-                  <Frame img={portrait} item={it} cat={s.name} n={`${i + 1}.${k + 1}`} />
-                </div>
-              ))}
+            {/* minimap */}
+            <div className="absolute bottom-4 right-4 w-[200px] rounded-[18px] bg-cream/90 p-3 shadow-lg backdrop-blur">
+              <div className="relative overflow-hidden rounded-lg bg-[#ece3d5]" style={{ aspectRatio: `${W}/${H}` }}>
+                {services.map((s) => (
+                  <button key={s.id} type="button" onClick={() => goTo(s.id)} aria-label={`Ir a ${s.name}`} className="absolute rounded bg-ink/25 hover:bg-oxblood" style={{ left: `${(clusters[s.id].x / W) * 100}%`, top: `${(clusters[s.id].y / H) * 100}%`, width: `${(760 / W) * 100}%`, height: `${(560 / H) * 100}%` }} />
+                ))}
+                <span aria-hidden className="pointer-events-none absolute rounded border-2 border-oxblood" style={{ left: `${(pos.x / W) * 100}%`, top: `${(pos.y / H) * 100}%`, width: `${(pos.vw / W) * 100}%`, height: `${(pos.vh / H) * 100}%` }} />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {services.map((s) => <button key={s.id} type="button" onClick={() => goTo(s.id)} className="cursor-pointer rounded-full bg-ink/5 px-2.5 py-1 text-[11px] hover:bg-ink hover:text-cream">{s.name}</button>)}
+              </div>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div data-view className="mt-10 space-y-12">
+          {services.map((s) => (
+            <div key={s.id} id={s.id} className="scroll-mt-20">
+              <div className="flex items-baseline justify-between px-5 sm:px-8"><h3 className="font-display text-[36px] leading-none">{s.name}</h3><p className="text-[13px] text-ink-soft">{s.desc}</p></div>
+              <ul className="no-scrollbar mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-6 sm:px-8">
+                {portfolio[s.id].map((it) => <li key={it.brand} data-pin className="shrink-0 snap-start"><Card img={portrait} item={it} /></li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
-function Tour() {
+/* ------------------------------------------------------------------ process: notes joined by a drawn thread */
+function Thread() {
   const ref = useRef<HTMLElement>(null);
   useMotion(ref, (root) => {
-    gsap.fromTo(root.querySelector("[data-path]"), { scaleY: 0 }, { scaleY: 1, ease: "none", scrollTrigger: { trigger: root.querySelector("[data-stops]"), start: "top 70%", end: "bottom 60%", scrub: 0.5 } });
-    root.querySelectorAll("[data-stop]").forEach((s) => gsap.from(s, { opacity: 0, x: -20, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: s, start: "top 80%", once: true } }));
+    gsap.fromTo(root.querySelector("[data-thread]"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: "none", scrollTrigger: { trigger: root.querySelector("[data-notes]"), start: "top 75%", end: "bottom 60%", scrub: 0.5 } });
+    gsap.from(root.querySelectorAll("[data-note]"), { y: 60, opacity: 0, rotate: (i) => (i % 2 ? 6 : -6), duration: 1.1, ease: "back.out(1.5)", stagger: 0.12, scrollTrigger: { trigger: root.querySelector("[data-notes]"), start: "top 75%", once: true } });
   });
   return (
     <section ref={ref} id="proceso" aria-labelledby="t-title" className="bg-[#ece3d5] py-[clamp(110px,14vw,200px)]">
-      <div className="mx-auto grid max-w-[1200px] gap-14 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">
-        <div className="lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
-          <p className={kicker}>Recorrido guiado</p>
-          <h2 id="t-title" className="mt-5 font-display text-[clamp(52px,6.4vw,104px)] leading-[0.92] tracking-[-0.02em]">Cómo se hace <em className="text-oxblood">una pieza</em></h2>
-          <ul className="mt-10 space-y-2.5">
-            {formats.map((f) => <li key={f.name} className="flex items-baseline gap-3 text-[15px]"><span className="h-px w-5 bg-ink/40" /><span className="font-display text-[19px]">{f.name}</span><span className="text-ink-soft">— {f.note}</span></li>)}
-          </ul>
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12">
+        <p className={kicker}>Cómo trabajo</p>
+        <h2 id="t-title" className="mt-5 font-display text-[clamp(44px,6.4vw,96px)] leading-[0.95] tracking-[-0.02em]">Del tablero <em className="text-oxblood">a tu feed</em></h2>
+        <div data-notes className="relative mt-16">
+          <svg aria-hidden viewBox="0 0 1000 200" preserveAspectRatio="none" className="absolute left-0 top-[18%] hidden h-[160px] w-full lg:block">
+            <path data-thread d="M60,120 C200,10 300,190 420,90 S640,20 720,120 S900,170 960,70" fill="none" stroke="#5c1a1f" strokeWidth="1.5" strokeDasharray="1" pathLength={1} strokeLinecap="round" />
+          </svg>
+          <ol className="relative grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((s, i) => (
+              <li key={s.n} data-note className="rounded-[24px] bg-[#fbf8f2] p-6 shadow-[0_30px_50px_-34px_rgba(42,27,22,0.55)]" style={{ marginTop: `${[0, 70, 20, 90][i]}px` }}>
+                <span className="grid h-11 w-11 place-items-center rounded-full bg-oxblood font-display text-[18px] italic text-cream">{s.n}</span>
+                <h3 className="mt-5 font-display text-[30px] leading-none">{s.title}</h3>
+                <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">{s.text}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-        <ol data-stops className="relative lg:col-span-6 lg:col-start-7">
-          <span data-path aria-hidden className="absolute bottom-6 left-[27px] top-6 w-px origin-top bg-oxblood/50" />
-          {steps.map((s, i) => (
-            <li key={s.n} data-stop className="relative flex gap-7 pb-14 last:pb-0">
-              <span className="relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full border border-oxblood/40 bg-[#ece3d5] font-display text-[18px] italic text-oxblood">{String(i + 1).padStart(2, "0")}</span>
-              <div className="pt-2">
-                <p className="text-[10px] font-medium uppercase tracking-[0.26em] text-ink-soft">Parada {i + 1}</p>
-                <h3 className="mt-2 font-display text-[38px] leading-none">{s.title}</h3>
-                <p className="mt-3 max-w-[28rem] text-[16px] leading-relaxed text-ink-soft">{s.text}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
       </div>
     </section>
   );
 }
 
-function Patrons() {
+function About({ portrait }: { portrait: Img }) {
   const ref = useRef<HTMLElement>(null);
   useMotion(ref, (root) => {
-    gsap.from(root.querySelectorAll("[data-p]"), { opacity: 0, letterSpacing: "0.5em", duration: 1.6, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: root, start: "top 70%", once: true } });
+    gsap.fromTo(root.querySelector("[data-ph]"), { clipPath: "inset(30% 20% 30% 20% round 30px)", rotate: -4 }, { clipPath: "inset(0% 0% 0% 0% round 30px)", rotate: 0, ease: "none", scrollTrigger: { trigger: root, start: "top 85%", end: "center 55%", scrub: 0.5 } });
   });
   return (
-    <section ref={ref} aria-labelledby="pa-title" className="mx-auto max-w-[1000px] px-5 py-[clamp(110px,14vw,200px)] text-center sm:px-8">
-      <p className={kicker}>Con el apoyo de</p>
-      <h2 id="pa-title" className="mt-5 font-display text-[clamp(44px,5.4vw,84px)] italic leading-none">Mecenas</h2>
-      <span aria-hidden className="mx-auto mt-10 block h-px w-24 bg-oxblood/50" />
-      <ul className="mt-12 grid gap-x-10 gap-y-6 sm:grid-cols-2">
-        {brands.map((b) => <li key={b} data-p className="font-display text-[clamp(20px,2vw,28px)] uppercase tracking-[0.18em]">{b}</li>)}
+    <section ref={ref} id="sobre-mi" aria-labelledby="a-title" className="mx-auto max-w-[1200px] px-5 py-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
+      <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div data-ph className="relative aspect-[4/5] overflow-hidden" style={{ background: "#d6c3a9" }}>
+          <img src={portrait.src} srcSet={portrait.srcSet} sizes="(min-width:1024px) 50vw, 100vw" alt="Retrato de Steff Ramírez" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top mix-blend-multiply" />
+        </div>
+        <div>
+          <p className={kicker}>Sobre mí</p>
+          <h2 id="a-title" className="mt-5 font-display text-[clamp(44px,6vw,92px)] leading-[0.95] tracking-[-0.02em]">La mente <em className="text-oxblood">detrás del tablero</em></h2>
+          <p className="mt-6 text-[19px] leading-[1.7]">Soy Steff. Pienso cada pieza antes de grabarla: idea, gancho, estructura. Contenido que se siente como la recomendación de una amiga, no como un anuncio.</p>
+          <ul className="mt-8 flex flex-wrap gap-2">
+            {brands.map((b) => <li key={b} className="rounded-full border border-ink/15 px-3.5 py-2 text-[14px]">{b}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section id="faq" aria-labelledby="f-title" className="mx-auto max-w-[1000px] px-5 pb-[clamp(110px,14vw,200px)] sm:px-8">
+      <p className={`${kicker} text-center`}>Notas</p>
+      <h2 id="f-title" className="mt-5 text-center font-display text-[clamp(44px,6vw,88px)] leading-[0.95]">Antes de <em className="text-oxblood">empezar</em></h2>
+      <ul className="mt-12 grid gap-3 md:grid-cols-2">
+        {faqs.map((f, i) => (
+          <li key={f.q} className={`rounded-[24px] transition-colors ${open === i ? "bg-ink text-cream" : "bg-[#f8f3ea]"}`}>
+            <h3>
+              <button type="button" aria-expanded={open === i} aria-controls={`nq${i}`} onClick={() => setOpen(open === i ? null : i)} className="flex w-full cursor-pointer items-start gap-4 p-5 text-left sm:p-6">
+                <span className="flex-1 font-display text-[clamp(20px,2vw,26px)] leading-tight">{f.q}</span>
+                <span aria-hidden className={`mt-1 transition-transform duration-500 ${open === i ? "rotate-45" : ""}`}>+</span>
+              </button>
+            </h3>
+            <div id={`nq${i}`} role="region" className="faq-panel" data-open={open === i} inert={open !== i}>
+              <div><p className="px-5 pb-6 text-[16px] leading-relaxed opacity-85 sm:px-6">{f.a}</p></div>
+            </div>
+          </li>
+        ))}
       </ul>
     </section>
   );
 }
 
-function Artist({ portrait }: { portrait: Img }) {
-  const ref = useRef<HTMLElement>(null);
-  useMotion(ref, (root) => {
-    gsap.from(root.querySelector(".g-frame"), { opacity: 0, y: 40, duration: 1.6, ease: "expo.out", scrollTrigger: { trigger: root, start: "top 70%", once: true } });
-    const s = new SplitText(root.querySelector("[data-txt]")!, { type: "lines", mask: "lines" });
-    gsap.from(s.lines, { yPercent: 100, duration: 1.3, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: root.querySelector("[data-txt]"), start: "top 85%", once: true } });
-    return () => s.revert();
-  });
-  return (
-    <section ref={ref} id="sobre-mi" aria-labelledby="ar-title" className="mx-auto max-w-[1200px] px-5 pb-[clamp(110px,14vw,200px)] sm:px-8 lg:px-12">
-      <div className="grid items-center gap-16 lg:grid-cols-2">
-        <div className="relative mx-auto w-full max-w-[420px]">
-          <div className="g-light" aria-hidden />
-          <div className="g-frame">
-            <div className="relative aspect-[4/5] overflow-hidden" style={{ background: "#d6c3a9" }}>
-              <img src={portrait.src} srcSet={portrait.srcSet} sizes="420px" alt="Retrato de Steff Ramírez" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top mix-blend-multiply" />
-            </div>
-          </div>
-        </div>
-        <div>
-          <p className={kicker}>Sobre la artista</p>
-          <h2 id="ar-title" className="mt-5 font-display text-[clamp(52px,6.4vw,104px)] leading-[0.92]">Steff <em className="text-oxblood">Ramírez</em></h2>
-          <p className="mt-3 text-[13px] text-ink-soft">Creadora de contenido UGC · Moda, belleza, lifestyle y momlife</p>
-          <p data-txt className="mt-8 text-[19px] leading-[1.75]">Su trabajo se siente como la recomendación de una amiga, no como un anuncio. Graba en casa, con luz natural, con cuidado y mucha cercanía: piezas verticales pensadas para que alguien deje de deslizar.</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Info() {
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <section id="faq" aria-labelledby="in-title" className="border-t border-ink/15 bg-[#f8f3ea] py-[clamp(110px,14vw,200px)]">
-      <div className="mx-auto max-w-[1100px] px-5 sm:px-8">
-        <p className={kicker}>Información práctica</p>
-        <h2 id="in-title" className="mt-5 font-display text-[clamp(48px,6vw,96px)] leading-[0.95]">Antes de tu <em className="text-oxblood">visita</em></h2>
-        <ul className="mt-14">
-          {faqs.map((f, i) => (
-            <li key={f.q} className="border-t border-ink/15 last:border-b">
-              <h3>
-                <button type="button" aria-expanded={open === i} aria-controls={`gq${i}`} onClick={() => setOpen(open === i ? null : i)} className="group grid w-full cursor-pointer grid-cols-[48px_1fr_auto] items-baseline py-6 text-left">
-                  <span className="font-display text-[15px] italic text-ink-soft">{roman[i] ?? i + 1}{i >= 4 ? "" : ""}</span>
-                  <span className={`font-display text-[clamp(22px,2.4vw,32px)] leading-tight transition-colors ${open === i ? "italic text-oxblood" : "group-hover:text-oxblood"}`}>{f.q}</span>
-                  <span aria-hidden className={`ml-6 text-[22px] transition-transform duration-500 ${open === i ? "rotate-45 text-oxblood" : ""}`}>+</span>
-                </button>
-              </h3>
-              <div id={`gq${i}`} role="region" className="faq-panel" data-open={open === i} inert={open !== i}>
-                <div><p className="max-w-[40rem] pb-7 pl-12 text-[16px] leading-relaxed text-ink-soft">{f.a}</p></div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-function Ticket({ onContact }: { onContact: () => void }) {
-  const ref = useRef<HTMLElement>(null);
+function Contact({ onContact }: { onContact: () => void }) {
   const { copy, done } = useCopy(EMAIL);
-  useMotion(ref, (root) => {
-    gsap.from(root.querySelector("[data-ticket]"), { y: 80, rotate: -3, opacity: 0, duration: 1.6, ease: "expo.out", scrollTrigger: { trigger: root, start: "top 70%", once: true } });
-  });
   return (
-    <section ref={ref} id="contacto" aria-labelledby="ti-title" className="v2-frame">
-      <div className="grain v2-radius relative flex min-h-[88svh] items-center justify-center overflow-hidden px-5 py-24" style={{ background: "linear-gradient(165deg,#dccab2 0%,#d3bfa5 48%,#c7af93 100%)" }}>
-        <div data-ticket className="g-ticket grid w-full max-w-[860px] overflow-hidden rounded-[22px] bg-[#fbf8f2] shadow-[0_50px_80px_-50px_rgba(42,27,22,0.6)] sm:grid-cols-[1fr_260px]">
-          <div className="p-8 sm:p-12">
-            <p className={kicker}>Entrada · Colaboración</p>
-            <h2 id="ti-title" className="mt-5 font-display text-[clamp(48px,7vw,104px)] leading-[0.9]">Reserva <em className="text-oxblood">tu pieza</em></h2>
-            <p className="mt-5 max-w-[26rem] text-[16px] leading-relaxed text-ink-soft">Cuéntame qué quieres contar. Te respondo con ideas, no con plantillas.</p>
-            <button type="button" onClick={onContact} className="group mt-8 inline-flex h-14 cursor-pointer items-center gap-5 rounded-full bg-ink pl-7 pr-2 text-[12px] font-medium uppercase tracking-[0.22em] text-cream transition-colors hover:bg-oxblood">
-              Escríbeme<span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-ink transition-transform duration-500 group-hover:rotate-45">↗</span>
-            </button>
-          </div>
-          <div className="g-stub flex flex-col justify-between gap-6 p-8 text-center sm:p-10">
-            <p className="font-display text-[44px] italic leading-none text-oxblood">Nº 01</p>
-            <div className="text-[13px] text-ink-soft">
-              <a href={`mailto:${EMAIL}`} className="break-words text-[12px] underline decoration-ink/30 underline-offset-4">{EMAIL}</a>
-              <button type="button" onClick={copy} className="mt-2 block w-full cursor-pointer text-[11px] uppercase tracking-[0.22em]">{done ? "copiado" : "copiar"}</button>
-            </div>
-            <ul className="flex justify-center gap-4 text-[11px] font-medium uppercase tracking-[0.2em]">
-              {socials.map((s) => <li key={s.label}><a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-oxblood">{s.label}<span className="sr-only"> (se abre en una pestaña nueva)</span></a></li>)}
-            </ul>
-          </div>
-        </div>
+    <section id="contacto" aria-labelledby="c-title" className="v2-frame">
+      <div className="grain v2-radius relative flex min-h-[80svh] flex-col items-center justify-center overflow-hidden px-5 py-24 text-center" style={{ background: "linear-gradient(165deg,#dccab2 0%,#d3bfa5 48%,#c7af93 100%)" }}>
+        <p className={kicker}>Contacto</p>
+        <h2 id="c-title" className="mt-6 font-display text-[clamp(56px,9.6vw,160px)] leading-[0.9] tracking-[-0.02em]">Añade tu marca <em className="text-oxblood">al tablero</em></h2>
+        <button type="button" onClick={onContact} className="group mt-10 inline-flex h-14 cursor-pointer items-center gap-5 rounded-full bg-ink pl-7 pr-2 text-[12px] font-medium uppercase tracking-[0.22em] text-cream transition-colors hover:bg-oxblood">
+          Escríbeme<span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-ink transition-transform duration-500 group-hover:rotate-45">↗</span>
+        </button>
+        <p className="mt-6 text-[14px] text-ink-soft"><a href={`mailto:${EMAIL}`} className="underline decoration-ink/30 underline-offset-4">{EMAIL}</a> · <button type="button" onClick={copy} className="cursor-pointer underline decoration-ink/30 underline-offset-4">{done ? "copiado" : "copiar"}</button></p>
+        <ul className="mt-8 flex gap-6 text-[11px] font-medium uppercase tracking-[0.24em]">
+          {socials.map((s) => <li key={s.label}><a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-oxblood">{s.label} ↗<span className="sr-only"> (se abre en una pestaña nueva)</span></a></li>)}
+        </ul>
         <p className="absolute bottom-6 text-[12px] text-ink-soft">© 2026 Steff Ramírez · UGC Creator</p>
       </div>
     </section>
@@ -262,13 +287,12 @@ export default function App({ hero, portrait }: P) {
     <Shell>
       {({ openMenu, openContact }) => (
         <>
-          <Hero hero={hero} onMenu={openMenu} onContact={openContact} />
-          <Rooms portrait={portrait} />
-          <Tour />
-          <Patrons />
-          <Artist portrait={portrait} />
-          <Info />
-          <Ticket onContact={openContact} />
+          <Hero hero={hero} portrait={portrait} onMenu={openMenu} onContact={openContact} />
+          <Board portrait={portrait} />
+          <Thread />
+          <About portrait={portrait} />
+          <Faq />
+          <Contact onContact={openContact} />
         </>
       )}
     </Shell>
