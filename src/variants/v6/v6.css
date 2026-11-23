@@ -1,32 +1,7 @@
-/* Bento — builds on the homepage stylesheet (v2.css) */
-.b-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: rgba(248, 243, 234, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-.b-dot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: #3f7d4a;
-  box-shadow: 0 0 0 0 rgba(63, 125, 74, 0.5);
-  animation: b-pulse 2s ease-out infinite;
-}
-@keyframes b-pulse { to { box-shadow: 0 0 0 12px rgba(63, 125, 74, 0); } }
-.b-fade { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
-.b-marquee { animation: b-marquee 40s linear infinite; }
-@keyframes b-marquee { to { transform: translateX(-50%); } }
-.b-swap { animation: b-swap 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes b-swap { from { opacity: 0; transform: translateY(-12px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
-@media (prefers-reduced-motion: reduce) { .b-dot, .b-marquee, .b-swap { animation: none; } }
+/* Agenda — builds on the homepage stylesheet (v2.css); headings in Manrope */
+:root { --font-display: "Manrope", "Instrument Sans", sans-serif; }
+.v2-title { font-weight: 800; letter-spacing: -0.06em; }
+.ag-leaf { backface-visibility: hidden; }
+.ag-swap { animation: ag-swap 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes ag-swap { from { opacity: 0; transform: translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .ag-swap { animation: none; } }
