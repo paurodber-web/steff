@@ -4,10 +4,10 @@ import { PlayIcon } from "../../v2/Icons";
 import type { Img } from "../images";
 import { gsap, useMotion, useReduced } from "../kit";
 import { Shot } from "../parts";
-import { Em, Eyebrow, Panel, h2Cls, headMotion } from "./common";
+import { Em, Eyebrow, Panel, headMotion } from "./common";
 import { photos, type SectorId } from "./data";
 
-function VideoCard({ item, portrait }: { item: VideoItem; portrait: Img }) {
+function VideoCard({ item, portrait, className = "" }: { item: VideoItem; portrait: Img; className?: string }) {
   const vref = useRef<HTMLVideoElement>(null);
   const reduced = useReduced();
 
@@ -23,7 +23,7 @@ function VideoCard({ item, portrait }: { item: VideoItem; portrait: Img }) {
   return (
     <li
       data-pi
-      className="v11-tile group relative aspect-[9/16] w-[64vw] max-w-[270px] shrink-0 snap-start overflow-hidden rounded-[22px] bg-[#e4d8c6] sm:rounded-[28px] md:w-auto md:max-w-none lg:rounded-[32px]"
+      className={`v11-tile group relative aspect-[9/16] w-[64vw] max-w-[270px] shrink-0 snap-start overflow-hidden rounded-[22px] bg-[#e4d8c6] sm:rounded-[28px] md:w-auto md:max-w-none lg:rounded-[32px] ${className}`}
       onMouseEnter={() => vref.current?.play().catch(() => {})}
     >
       {item.src ? (
@@ -54,6 +54,7 @@ function VideoCard({ item, portrait }: { item: VideoItem; portrait: Img }) {
 export function Portfolio({ portrait }: { portrait: Img }) {
   const ref = useRef<HTMLElement>(null);
   const panel = useRef<HTMLDivElement>(null);
+  const cursor = useRef<HTMLDivElement>(null);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const [tab, setTab] = useState<SectorId>("moda");
   const [shown, setShown] = useState<SectorId>("moda");
@@ -62,7 +63,7 @@ export function Portfolio({ portrait }: { portrait: Img }) {
   const reduced = useReduced();
 
   useMotion(ref, (root) => {
-    const off = headMotion(root);
+    const off = headMotion(root, "top 85%", "words");
     const items = gsap.utils.toArray<HTMLElement>("[data-pi]", root);
     gsap.from(root.querySelectorAll("[data-tabs] > *"), { opacity: 0, y: 10, duration: 0.5, stagger: 0.06, ease: "power2.out", scrollTrigger: { trigger: root.querySelector("[data-tabs]"), start: "top 90%", once: true } });
     gsap.from(items, {
@@ -77,6 +78,57 @@ export function Portfolio({ portrait }: { portrait: Img }) {
     });
     return off;
   });
+
+  // custom "Ver" cursor follower + subtle 3D tilt, mouse only
+  useEffect(() => {
+    const area = ref.current;
+    const cur = cursor.current;
+    if (!area || !cur) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const qx = gsap.quickTo(cur, "x", { duration: 0.45, ease: "power3" });
+    const qy = gsap.quickTo(cur, "y", { duration: 0.45, ease: "power3" });
+    gsap.set(cur, { scale: 0, opacity: 0 });
+    let tile: HTMLElement | null = null;
+    const rest = (t: HTMLElement) => gsap.to(t, { rotationX: 0, rotationY: 0, duration: 0.7, ease: "power3.out", overwrite: "auto" });
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      const t = (e.target as HTMLElement).closest<HTMLElement>("#v11-portfolio-panel [data-pi]");
+      if (t !== tile) {
+        if (tile) rest(tile);
+        tile = t;
+        gsap.to(cur, t ? { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)" } : { scale: 0, opacity: 0, duration: 0.25, ease: "power2.in" });
+        area.classList.toggle("v11-cursor-on", !!t);
+      }
+      qx(e.clientX);
+      qy(e.clientY);
+      if (t) {
+        const r = t.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(t, { rotationY: px * 7, rotationX: -py * 7, transformPerspective: 900, duration: 0.5, ease: "power3.out", overwrite: "auto" });
+      }
+    };
+    const leave = () => {
+      if (tile) rest(tile);
+      tile = null;
+      area.classList.remove("v11-cursor-on");
+      gsap.to(cur, { scale: 0, opacity: 0, duration: 0.25, ease: "power2.in" });
+    };
+    const click = (e: MouseEvent) => {
+      // TODO: abrir un visor / enlace real; de momento reproduce o pausa el video si existe
+      const v = (e.target as HTMLElement).closest("[data-pi]")?.querySelector("video");
+      if (v) (v.paused ? v.play().catch(() => {}) : v.pause());
+    };
+    area.addEventListener("pointermove", move);
+    area.addEventListener("pointerleave", leave);
+    area.addEventListener("click", click);
+    return () => {
+      area.removeEventListener("pointermove", move);
+      area.removeEventListener("pointerleave", leave);
+      area.removeEventListener("click", click);
+      area.classList.remove("v11-cursor-on");
+    };
+  }, []);
 
   const select = (id: SectorId) => {
     if (id === tab) return;
@@ -114,15 +166,15 @@ export function Portfolio({ portrait }: { portrait: Img }) {
   const pics = photos[shown];
 
   return (
-    <Panel id="portafolio" labelledBy="v11-portafolio-h" innerRef={ref}>
+    <Panel id="portafolio" labelledBy="v11-portafolio-h" innerRef={ref} tone="paper">
       <header className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Eyebrow>Portafolio</Eyebrow>
-          <h2 id="v11-portafolio-h" data-h2 className={h2Cls}>
+          <h2 id="v11-portafolio-h" data-h2 className="mt-5 font-display text-[clamp(42px,10.5vw,64px)] leading-[1] tracking-[-0.02em] text-ink sm:text-[clamp(52px,8vw,72px)] lg:text-[clamp(48px,4.4vw,68px)]">
             Mira cómo se <Em>ve</Em> mi trabajo
           </h2>
         </div>
-        <div data-tabs role="tablist" aria-label="Sector" className="flex flex-wrap gap-2">
+        <div data-tabs role="tablist" aria-label="Sector" className="no-scrollbar -mx-5 flex flex-none flex-nowrap gap-1.5 overflow-x-auto px-5 py-1 sm:mx-0 sm:gap-2 sm:px-1 lg:pb-3">
           {services.map((s, i) => (
             <button
               key={s.id}
@@ -147,9 +199,9 @@ export function Portfolio({ portrait }: { portrait: Img }) {
 
       <div ref={panel} id="v11-portfolio-panel" role="tabpanel" aria-labelledby={`v11-tab-${tab}`} className="mt-7 lg:mt-9">
         <div key={shown} className="grid gap-3 sm:gap-4 lg:grid-cols-12 lg:gap-5">
-          <ul className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 sm:-mx-10 sm:px-10 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 lg:col-span-9 lg:gap-5" aria-label="Videos">
-            {vids.slice(0, 3).map((v) => (
-              <VideoCard key={v.brand} item={v} portrait={portrait} />
+          <ul className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 sm:-mx-10 sm:px-10 md:mx-0 md:grid md:grid-cols-3 md:items-start md:gap-4 md:overflow-visible md:px-0 lg:col-span-9 lg:gap-5" aria-label="Videos">
+            {vids.slice(0, 3).map((v, i) => (
+              <VideoCard key={v.brand} item={v} portrait={portrait} className={i === 1 ? "md:mt-8 lg:mt-12" : ""} />
             ))}
           </ul>
           <div className="lg:relative lg:col-span-3">
@@ -171,6 +223,9 @@ export function Portfolio({ portrait }: { portrait: Img }) {
             </ul>
           </div>
         </div>
+      </div>
+      <div ref={cursor} aria-hidden className="v11-cursor">
+        Ver
       </div>
     </Panel>
   );

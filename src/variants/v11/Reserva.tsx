@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { EMAIL } from "../../v2/data";
 import { gsap, useMotion } from "../kit";
-import { Em, Eyebrow, Panel, h2Cls, headMotion, leadCls } from "./common";
+import { Em, Eyebrow, Panel, headMotion } from "./common";
 import { SLOTS } from "./data";
 
 // TODO: conectar con Calendly/Cal.com si se prefiere
@@ -43,8 +43,9 @@ export function Reserva() {
   }, []);
 
   useMotion(ref, (root) => {
-    const off = headMotion(root);
+    const off = headMotion(root, "top 85%", "mask");
     const at = { trigger: root.querySelector("[data-grid]"), start: "top 88%", once: true } as const;
+    gsap.from(root.querySelectorAll("[data-info] > *"), { opacity: 0, y: 18, duration: 0.7, stagger: 0.08, ease: "power2.out", scrollTrigger: at });
     gsap.from(root.querySelectorAll("[data-cal]"), { opacity: 0, x: -32, duration: 0.8, ease: "expo.out", scrollTrigger: at });
     gsap.from(root.querySelectorAll("[data-side]"), { opacity: 0, x: 32, duration: 0.8, delay: 0.1, ease: "expo.out", scrollTrigger: at });
     gsap.from(root.querySelectorAll("[data-day]"), { opacity: 0, scale: 0.7, duration: 0.4, stagger: { each: 0.008, from: "start" }, delay: 0.25, ease: "power2.out", clearProps: "opacity,scale", scrollTrigger: at });
@@ -100,22 +101,44 @@ export function Reserva() {
   };
 
   return (
-    <Panel id="reserva" labelledBy="v11-reserva-h" innerRef={ref}>
-      <header className="lg:flex lg:items-end lg:justify-between lg:gap-10">
-        <div>
-          <Eyebrow>Reserva una llamada</Eyebrow>
-          <h2 id="v11-reserva-h" data-h2 className={h2Cls}>
-            Hablemos de tu <Em>próxima campaña</Em>
-          </h2>
-        </div>
-        <p data-lead className={`${leadCls} lg:max-w-[34ch]`}>
-          Elige un día y una hora: son 20 minutos por videollamada, sin compromiso.
-        </p>
+    <Panel id="reserva" labelledBy="v11-reserva-h" innerRef={ref} tone="paper">
+      <header>
+        <Eyebrow>Reserva una llamada</Eyebrow>
+        <h2 id="v11-reserva-h" data-h2 className="mt-5 max-w-[16ch] font-display text-[clamp(42px,11vw,68px)] leading-[0.98] tracking-[-0.02em] text-ink sm:max-w-none sm:text-[clamp(52px,8vw,76px)] lg:text-[clamp(52px,5.6vw,88px)]">
+          Hablemos de tu <Em>próxima campaña</Em>
+        </h2>
       </header>
 
-      <div data-grid className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-12 lg:gap-5">
+      <div data-grid className="mt-8 grid gap-6 md:gap-5 lg:mt-10 lg:grid-cols-12 lg:gap-6">
+        <aside data-info className="lg:col-span-3 lg:pr-2">
+          <p className="max-w-[34ch] text-[15px] leading-relaxed text-ink-soft sm:text-base">Elige un día y una hora: una conversación sin compromiso para ver cómo puedo ayudarte.</p>
+          <h3 className="mt-6 text-[11px] font-medium uppercase tracking-[0.22em] text-ink">Qué hablaremos</h3>
+          <ul className="mt-3 grid gap-3 md:grid-cols-3 lg:grid-cols-1">
+            {[
+              "Tu marca, tu producto y a quién quieres llegar.",
+              "Qué formatos, ganchos y plataformas encajan mejor.",
+              "Plazos, presupuesto orientativo y siguientes pasos.",
+            ].map((t, i) => (
+              <li key={t} className="flex gap-3 border-t border-ink/12 pt-3 text-[14px] leading-snug text-ink-soft">
+                <span aria-hidden className="font-display text-[18px] italic leading-none text-oxblood">
+                  0{i + 1}
+                </span>
+                {t}
+              </li>
+            ))}
+          </ul>
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Detalles de la llamada">
+            {["20 min", "Videollamada", "Gratis"].map((c) => (
+              <li key={c} className="v11-tag bg-white/70 py-1.5 text-[12px] text-ink">
+                {c}
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        <div className="grid gap-4 md:grid-cols-2 md:gap-5 lg:col-span-9 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         {/* calendar */}
-        <div data-cal className="v11-card rounded-[22px] p-4 sm:rounded-[28px] sm:p-6 lg:col-span-5 lg:rounded-[32px]">
+        <div data-cal className="v11-card rounded-[22px] p-4 sm:rounded-[28px] sm:p-6 lg:rounded-[32px]">
           <div className="flex items-center justify-between">
             <h3 aria-live="polite" className="font-display text-[22px] text-ink sm:text-[26px]">
               {month ? cap(fmtMonth.format(month).replace(" de ", " ")) : " "}
@@ -168,9 +191,9 @@ export function Reserva() {
         </div>
 
         {/* slots + form */}
-        <div data-side className="v11-card rounded-[22px] p-5 sm:rounded-[28px] sm:p-6 lg:col-span-7 lg:rounded-[32px] lg:p-8">
+        <div data-side className="v11-card rounded-[22px] p-5 sm:rounded-[28px] sm:p-6 lg:rounded-[32px] lg:p-7">
           {sent ? (
-            <div role="status" className="flex h-full min-h-[320px] flex-col items-start justify-center gap-4">
+            <div role="status" className="v11-pop flex h-full min-h-[320px] flex-col items-start justify-center gap-4">
               <span className="grid h-12 w-12 place-items-center rounded-full bg-oxblood text-cream">
                 <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="m3 8.5 3.2 3L13 4.5" />
@@ -210,7 +233,7 @@ export function Reserva() {
                 {day && !free.length && <p className="mt-2 text-[13px] text-ink-soft">Hoy ya no quedan huecos. Prueba con otro día.</p>}
               </fieldset>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 xl:grid-cols-2">
                 <label className="v11-field">
                   <span>Nombre</span>
                   <input required name="nombre" autoComplete="name" value={f.nombre} onChange={set("nombre")} />
@@ -219,11 +242,11 @@ export function Reserva() {
                   <span>Email</span>
                   <input required type="email" name="email" autoComplete="email" value={f.email} onChange={set("email")} />
                 </label>
-                <label className="v11-field sm:col-span-2">
+                <label className="v11-field xl:col-span-2">
                   <span>Marca</span>
                   <input name="marca" autoComplete="organization" value={f.marca} onChange={set("marca")} />
                 </label>
-                <label className="v11-field sm:col-span-2">
+                <label className="v11-field xl:col-span-2">
                   <span>Mensaje breve</span>
                   <textarea name="mensaje" rows={3} value={f.mensaje} onChange={set("mensaje")} />
                 </label>
@@ -239,6 +262,7 @@ export function Reserva() {
               </div>
             </form>
           )}
+        </div>
         </div>
       </div>
     </Panel>

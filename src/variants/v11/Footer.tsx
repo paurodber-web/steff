@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EMAIL, socials } from "../../v2/data";
 import { ArrowUpRight, MailIcon } from "../../v2/Icons";
 import { gsap, SplitText, useCopy, useMotion } from "../kit";
@@ -17,17 +17,48 @@ const nav = [
 
 export function Footer() {
   const ref = useRef<HTMLElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const word = useRef<HTMLDivElement>(null);
   const { copy, done } = useCopy(EMAIL);
+  // static on the server, refreshed after mount: no hydration mismatch
+  const [year, setYear] = useState(2026);
+  useEffect(() => setYear(new Date().getFullYear()), []);
+
+  // fit the outlined word to the full width of the card
+  useEffect(() => {
+    const b = box.current;
+    const w = word.current;
+    if (!b || !w) return;
+    const fit = () => {
+      if (!b.clientWidth) return;
+      // optical-size axis makes width non-linear: converge by re-measuring at the real size
+      let fs = Math.max(60, b.clientWidth / 2.2);
+      for (let i = 0; i < 5; i++) {
+        w.style.fontSize = `${fs}px`;
+        const natural = w.offsetWidth;
+        if (!natural) return;
+        fs *= (b.clientWidth / natural) * 0.88;
+      }
+      w.style.fontSize = `${fs}px`;
+      b.style.height = `${fs * 0.8}px`;
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(b);
+    document.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  }, []);
 
   useMotion(ref, (root) => {
     const at = { trigger: root, start: "top 95%", once: true } as const;
     const h = root.querySelector<HTMLElement>("[data-cta]")!;
-    const split = SplitText.create(h, { type: "lines" });
+    const split = SplitText.create(h, { type: "words,chars" });
     const tl = gsap.timeline({ scrollTrigger: at });
     tl.from(root, { clipPath: "inset(0 0 100% 0)", duration: 1, ease: "expo.out", clearProps: "clipPath" })
-      .from(split.lines, { yPercent: 70, opacity: 0, filter: "blur(10px)", duration: 0.9, stagger: 0.12, ease: "expo.out" }, 0.2)
-      .from(root.querySelectorAll("[data-in]"), { opacity: 0, y: 14, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.55)
-      .from(root.querySelectorAll("[data-mark]"), { yPercent: 30, opacity: 0, duration: 1.1, ease: "expo.out" }, 0.3);
+      .from(split.chars, { yPercent: 70, opacity: 0, duration: 0.7, stagger: 0.025, ease: "expo.out" }, 0.25)
+      .from(root.querySelectorAll("[data-in]"), { opacity: 0, y: 14, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.5)
+      .from(root.querySelectorAll("[data-fl]"), { yPercent: -70, opacity: 0, filter: "blur(10px)", duration: 1, stagger: 0.09, ease: "expo.out" }, 0.45)
+      .add(() => root.querySelector("[data-word]")?.classList.add("is-in"), 1.4);
     return () => split.revert();
   });
 
@@ -37,34 +68,40 @@ export function Footer() {
         ref={ref}
         id="contacto"
         aria-labelledby="v11-cta-h"
-        className={`grain v11-wrap relative scroll-mt-4 overflow-hidden px-5 pb-0 pt-14 sm:px-10 sm:pt-20 lg:px-14 lg:pt-20 ${cardRadius}`}
+        className={`grain v11-wrap relative scroll-mt-4 overflow-hidden px-5 pb-5 pt-14 sm:px-10 sm:pt-20 lg:px-14 lg:pt-16 ${cardRadius}`}
         style={{ background: HERO_BG }}
       >
-        <div className="relative z-10 mx-auto flex max-w-[1000px] flex-col items-center text-center">
-          <p data-in className="text-[11px] font-medium uppercase tracking-[0.26em] text-ink/70">
-            <span className="mr-3 inline-block h-px w-8 translate-y-[-3px] bg-ink/30" />
-            Contacto
-            <span className="ml-3 inline-block h-px w-8 translate-y-[-3px] bg-ink/30" />
-          </p>
-          <h2 id="v11-cta-h" data-cta className="mt-6 font-display text-[clamp(44px,9.5vw,128px)] leading-[0.98] tracking-[-0.02em] text-ink">
-            ¿Creamos algo <Em>juntas</Em>?
-          </h2>
-          <p data-in className="mt-8 max-w-[42ch] text-[15px] leading-relaxed text-ink/75 sm:text-[17px]">
-            Cuéntame tu marca y tu idea. Te respondo en menos de 24 horas.
-          </p>
-          <div data-in className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
-            <a href="#reserva" className="v11-btn v11-btn--solid justify-center">
-              Reserva una llamada
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </a>
-            <button type="button" onClick={copy} className="v11-btn v11-btn--ghost justify-center" aria-label={`Copiar email ${EMAIL}`}>
-              <MailIcon className="h-4 w-4" />
-              <span aria-live="polite">{done ? "¡Email copiado!" : EMAIL}</span>
-            </button>
+        <div className="relative z-10 flex flex-col items-center text-center lg:flex-row lg:items-end lg:justify-between lg:gap-10 lg:text-left">
+          <div>
+            <p data-in className="text-[11px] font-medium uppercase tracking-[0.26em] text-ink/70">
+              <span className="mr-3 inline-block h-px w-8 translate-y-[-3px] bg-ink/30" />
+              Contacto
+            </p>
+            <h2 id="v11-cta-h" data-cta className="mt-5 font-display text-[clamp(46px,12vw,72px)] leading-[0.98] tracking-[-0.02em] text-ink sm:text-[clamp(60px,9vw,96px)] lg:text-[clamp(56px,6.2vw,100px)]">
+              ¿Creamos algo{" "}
+              <span className="whitespace-nowrap">
+                <Em>juntas</Em>?
+              </span>
+            </h2>
+          </div>
+          <div className="flex flex-col items-center lg:items-start lg:pb-2">
+            <p data-in className="mt-6 max-w-[34ch] text-[15px] leading-relaxed text-ink/75 sm:text-[17px] lg:mt-0">
+              Cuéntame tu marca y tu idea. Te respondo en menos de 24 horas.
+            </p>
+            <div data-in className="mt-6 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
+              <a href="#reserva" className="v11-btn v11-btn--solid justify-center">
+                Reserva una llamada
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+              <button type="button" onClick={copy} className="v11-btn v11-btn--ghost justify-center" aria-label={`Copiar email ${EMAIL}`}>
+                <MailIcon className="h-4 w-4" />
+                <span aria-live="polite">{done ? "¡Email copiado!" : EMAIL}</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div data-in className="relative z-10 mt-14 flex flex-col gap-5 border-t border-ink/15 pt-5 sm:mt-20 lg:mt-24 lg:flex-row lg:items-center lg:justify-between">
+        <div data-in className="relative z-10 mt-12 flex flex-col gap-3 border-t border-ink/15 pt-4 sm:mt-14 lg:mt-10 lg:flex-row lg:items-center lg:justify-between">
           <nav aria-label="Secciones">
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-ink/80">
               {nav.map((n) => (
@@ -86,13 +123,27 @@ export function Footer() {
               </li>
             ))}
           </ul>
-          <p className="text-[12px] text-ink/60">© {new Date().getFullYear()} Steff Ramírez · Todos los derechos reservados</p>
         </div>
 
-        <div aria-hidden className="pointer-events-none relative z-0 -mx-5 mt-4 h-[clamp(56px,12vw,170px)] select-none overflow-hidden sm:-mx-10 lg:-mx-14 lg:mt-2">
-          <div data-mark className="text-center font-display text-[clamp(110px,24vw,340px)] leading-[0.8] tracking-[-0.03em] text-cream/35">
-            Steff
+        {/* huge outlined lettering that fills the width, letter by letter */}
+        <div ref={box} aria-hidden className="pointer-events-none relative z-0 mt-6 flex select-none justify-center overflow-hidden" style={{ height: "clamp(120px,19vw,300px)" }}>
+          <div ref={word} data-word className="v11-outline flex w-max whitespace-nowrap font-display leading-[0.9] tracking-[-0.03em]" style={{ fontSize: "clamp(110px,24vw,340px)" }}>
+            {"Steff".split("").map((c, i) => (
+              <span key={i} data-fl className="inline-block">
+                {c}
+              </span>
+            ))}
           </div>
+        </div>
+
+        <div className="relative z-10 mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[12px] text-ink/70">© {year} Steff Ramírez · Todos los derechos reservados</p>
+          <a href="#top" className="v11-btn v11-btn--ghost justify-center">
+            Volver arriba
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 19V5m-6 6 6-6 6 6" />
+            </svg>
+          </a>
         </div>
       </section>
     </div>

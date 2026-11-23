@@ -78,12 +78,20 @@ export const testimonials = [
   },
 ];
 
+/* ---------------- Marcas: cifras clave ---------------- */
+// TODO: sustituir por cifras reales
+export const figures = [
+  { value: 120, dec: 0, prefix: "+", suffix: "", label: "videos entregados" },
+  { value: 35, dec: 0, prefix: "", suffix: "", label: "marcas colaboradas" },
+  { value: 4.8, dec: 1, prefix: "", suffix: "M", label: "visualizaciones" },
+];
+
 /* ---------------- Sobre mí ---------------- */
 // TODO: sustituir por cifras reales
 export const stats = [
-  { value: 40, prefix: "+", suffix: "", label: "Marcas colaboradas" },
-  { value: 250, prefix: "+", suffix: "", label: "Videos entregados" },
+  { value: 3, prefix: "+", suffix: "", label: "Años creando" },
   { value: 98, prefix: "", suffix: "%", label: "Entregas a tiempo" },
+  { value: 24, prefix: "", suffix: " h", label: "Respuesta máxima" },
 ];
 
 /* ---------------- Reserva ---------------- */
