@@ -1,0 +1,36 @@
+/* Variante 11 · Portfolio — scoped with v11- */
+.v11-wrap {
+  max-width: 1400px;
+  margin-inline: auto;
+}
+.v11-panel {
+  background: #efe7da;
+  border: 1px solid rgb(42 27 22 / 0.06);
+}
+.v11-card {
+  background: #fbf8f2;
+  border: 1px solid rgb(42 27 22 / 0.07);
+  /* hover lift uses the individual `translate` property so it never fights GSAP's transform */
+  transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.5s ease;
+}
+.v11-img {
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .v11-card:hover {
+    translate: 0 -6px;
+    box-shadow: 0 30px 50px -30px rgb(42 27 22 / 0.35);
+  }
+  .v11-card:hover .v11-img {
+    transform: scale(1.06);
+  }
+}
+.v11-tag {
+  border: 1px solid rgb(42 27 22 / 0.14);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
