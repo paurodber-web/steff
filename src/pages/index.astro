@@ -1,59 +1,49 @@
 ---
-import { getImage } from "astro:assets";
-import Page from "../v2/Page";
-import heroSrc from "../assets/steff-hero.png";
-import aboutSrc from "../assets/steff.webp";
-import "../v2/v2.css";
-
-const widths = [360, 540, 701];
-const variants = await Promise.all(
-  widths.map((width) => getImage({ src: heroSrc, format: "webp", quality: 82, width })),
-);
-const largest = variants[variants.length - 1];
-const image = {
-  src: largest.src,
-  srcSet: variants.map((v, i) => `${v.src} ${widths[i]}w`).join(", "),
-  sizes: "(min-width: 1024px) 480px, 340px",
-  width: Number(largest.attributes.width ?? heroSrc.width),
-  height: Number(largest.attributes.height ?? heroSrc.height),
-};
-
-const aboutWidths = [320, 560, 900];
-const aboutVariants = await Promise.all(
-  aboutWidths.map((width) => getImage({ src: aboutSrc, format: "webp", quality: 80, width })),
-);
-const aboutLargest = aboutVariants[aboutVariants.length - 1];
-const aboutImage = {
-  src: aboutLargest.src,
-  srcSet: aboutVariants.map((v, i) => `${v.src} ${aboutWidths[i]}w`).join(", "),
-  sizes: "(min-width: 1024px) 460px, 380px",
-  width: Number(aboutLargest.attributes.width ?? aboutSrc.width),
-  height: Number(aboutLargest.attributes.height ?? aboutSrc.height),
-};
-
-const title = "Steff Ramírez · UGC Creator";
-const description =
-  "Steff Ramírez, UGC creator: videos de moda, belleza, lifestyle y maternidad para marcas que quieren conectar con su audiencia.";
+const base = import.meta.env.BASE_URL;
+const items = [
+  { href: "portada-actual/", name: "Portada actual", note: "La versión que está publicada ahora mismo." },
+  { href: "variante-1/", name: "Variante 1 · Reels", note: "La portada se encoge hasta ser la pantalla de un móvil." },
+  { href: "variante-2/", name: "Variante 2 · Perfil", note: "Tu web como perfil." },
+  { href: "variante-3/", name: "Variante 3 · Editor", note: "Tu web como editor de video." },
+  { href: "variante-4/", name: "Variante 4 · Conversación", note: "Burbujas de mensaje y un chat para el brief." },
+  { href: "variante-5/", name: "Variante 5 · Tablero", note: "Moodboard con lienzo y minimapa." },
+  { href: "variante-6/", name: "Variante 6 · Agenda", note: "Planificador con calendario y Gantt." },
+  { href: "variante-7/", name: "Variante 7 · Pila", note: "Una baraja de videos que se reparte con el scroll." },
+  { href: "variante-8/", name: "Variante 8 · Stories", note: "Historias destacadas con visor a pantalla completa." },
+  { href: "variante-9/", name: "Variante 9 · Notificaciones", note: "Pantalla de bloqueo con notificaciones." },
+  { href: "variante-10/", name: "Variante 10 · Explorar", note: "Una búsqueda escribe tu nombre y la portada es el resultado." },
+];
+const title = "Índice · Steff Ramírez";
 ---
 
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f4eee3" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
     <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content="/steff.png" />
-    <meta property="og:locale" content="es_LA" />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon-v2.svg`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <Page image={image} aboutImage={aboutImage} client:load />
+    <main>
+      <h1>Índice</h1>
+      <ul>
+        {items.map((it) => (
+          <li>
+            <a href={`${base}${it.href}`}>{it.name}</a>
+            <p>{it.note}</p>
+          </li>
+        ))}
+      </ul>
+    </main>
   </body>
 </html>
+
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #fff; color: #111; line-height: 1.5; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 1.6rem; margin: 0 0 16px; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { padding: 12px 0; border-bottom: 1px solid #ddd; }
+  a { font-weight: 600; color: #111; }
+  p { margin: 4px 0 0; font-size: 0.9rem; color: #555; }
+</style>
